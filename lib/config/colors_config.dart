@@ -8,9 +8,9 @@ class ColorsConfig {
   static const Color textColor1 = Color.fromRGBO(113, 118, 128, 1);
   static const Color textColor2 = Color.fromRGBO(255, 255, 255, 1);
   static const Color textColor3 = Color.fromRGBO(213, 215, 218, 1);
-  static const Color primaryVariant = Color(0xFF3700B3);
-
   static const Color bgColor1 = Color.fromRGBO(0, 0, 0, 1);
+
+  static const Color primaryVariant = Color(0xFF3700B3);
 
   // Secondary Colors
   static const Color secondary = Color(0xFF03DAC6);

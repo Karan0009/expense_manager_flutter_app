@@ -2,7 +2,6 @@ import 'package:expense_manager/data/models/login_state.dart';
 import 'package:expense_manager/data/repositories/auth_repository.dart';
 import 'package:expense_manager/globals/components/glassmorphic_snackbar.dart';
 import 'package:expense_manager/screens/create_account_page/view/create_account_page_view.dart';
-import 'package:expense_manager/screens/enter_otp_page/view/enter_otp_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -14,16 +13,16 @@ import 'package:go_router/go_router.dart';
 ///     Listeners (e.g., EventListeners or ValueNotifiers)
 ///     Controllers (e.g., TextEditingController, ScrollController)
 
-final loginPageViewModelProvider =
-    StateNotifierProvider<LoginPageViewModel, LoginState>((ref) {
+final enterOtpPageViewModelProvider =
+    StateNotifierProvider<EnterOtpPageViewModel, LoginState>((ref) {
   final repo = ref.watch(authRepositoryProvider);
-  return LoginPageViewModel(repo);
+  return EnterOtpPageViewModel(repo);
 });
 
-class LoginPageViewModel extends StateNotifier<LoginState> {
+class EnterOtpPageViewModel extends StateNotifier<LoginState> {
   final AuthRepository _authRepository;
 
-  LoginPageViewModel(this._authRepository) : super(LoginState());
+  EnterOtpPageViewModel(this._authRepository) : super(LoginState());
 
   void onPhoneNumberChanged(String value) {
     state = state.copyWith(phoneNumber: value);
@@ -72,7 +71,6 @@ class LoginPageViewModel extends StateNotifier<LoginState> {
     state = state.copyWith(isLoading: true);
 
     if (otp != null && context.mounted) {
-      context.go(EnterOtpPageView.routePath);
       // context.goNamed(AppRoutes.loginOtpPage);
     } else if (otp == null && context.mounted) {
       _showSnackBar(context, 'Failed to get OTP');

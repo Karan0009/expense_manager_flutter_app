@@ -171,7 +171,7 @@ class LoginPageView extends ConsumerWidget {
                           'Login',
                           style: TextStyle(
                             color: ColorsConfig.textColor2,
-                            fontSize: 16,
+                            fontSize: 17,
                             fontWeight: FontWeight.w800,
                             fontFamily: GoogleFonts.inter().fontFamily,
                           ),

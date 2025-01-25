@@ -1,6 +1,7 @@
 import 'package:expense_manager/data/models/login_state.dart';
 import 'package:expense_manager/data/repositories/auth_repository.dart';
 import 'package:expense_manager/globals/components/glassmorphic_snackbar.dart';
+import 'package:expense_manager/screens/enter_otp_page/view/enter_otp_page_view.dart';
 import 'package:expense_manager/screens/login_page/view/login_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,7 +61,7 @@ class CreateAccountPageViewModel extends StateNotifier<LoginState> {
     state = state.copyWith(isLoading: false);
 
     if (otp != null && context.mounted) {
-      // context.go(AppRoutes.loginOtpPage);
+      context.go(EnterOtpPageView.routePath);
     } else if (otp == null && context.mounted) {
       _showSnackBar(context, 'Failed to get OTP');
     }
