@@ -54,17 +54,11 @@ class CreateAccountPageViewModel extends StateNotifier<LoginState> {
     try {
       final otp = await _authRepository.getOtp(
           state.phoneNumber, state.isTermsAccepted);
-      // {
-      //   'phone': ,
-      //   'is_terms_accepted': state.isTermsAccepted,
-      //   'is_register': true,
-      // }
       state = state.copyWith(otpInfo: otp);
 
       state = state.copyWith(isLoading: false);
       if (otp != null && context.mounted) {
         context.go(EnterOtpPageView.routePath);
-        // context.goNamed(AppRoutes.loginOtpPage);
       } else if (otp == null && context.mounted) {
         _showSnackBar(context, 'Failed to get OTP');
       }
@@ -76,17 +70,19 @@ class CreateAccountPageViewModel extends StateNotifier<LoginState> {
     }
   }
 
-  // Login Button Click Handler
   void onLoginClicked(BuildContext context) {
     context.pushReplacement(LoginPageView.routePath);
   }
 
-  // Helper method to show a SnackBar
   void _showSnackBar(BuildContext context, String message) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         GlassmorphicSnackBar(message: message),
       );
     }
+  }
+
+  void resetState() {
+    state = LoginState();
   }
 }

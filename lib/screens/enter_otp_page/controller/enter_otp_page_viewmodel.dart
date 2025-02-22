@@ -95,6 +95,7 @@ class EnterOtpPageViewModel extends StateNotifier<EnterOtpState> {
   }
 
   void changePhoneNumberClickHandler(BuildContext context) {
+    _ref.read(loginPageViewModelProvider.notifier).resetState();
     if (context.canPop()) {
       context.pop();
     } else {
