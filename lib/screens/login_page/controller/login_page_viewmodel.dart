@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:expense_manager/data/models/login_state.dart';
 import 'package:expense_manager/data/repositories/auth_repository.dart';
 import 'package:expense_manager/globals/components/glassmorphic_snackbar.dart';
@@ -25,10 +23,7 @@ final loginPageViewModelProvider =
 class LoginPageViewModel extends StateNotifier<LoginState> {
   final AuthRepository _authRepository;
 
-  LoginPageViewModel(this._authRepository) : super(LoginState()) {
-    log("we're here");
-  }
-
+  LoginPageViewModel(this._authRepository) : super(LoginState());
   void onPhoneNumberChanged(String value) {
     state = state.copyWith(phoneNumber: value);
   }

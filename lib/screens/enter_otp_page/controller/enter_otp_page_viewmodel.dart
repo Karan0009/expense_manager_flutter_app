@@ -6,6 +6,7 @@ import 'package:expense_manager/data/models/enter_otp_state.dart';
 import 'package:expense_manager/data/models/login_state.dart';
 import 'package:expense_manager/data/repositories/auth_repository.dart';
 import 'package:expense_manager/globals/components/glassmorphic_snackbar.dart';
+import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
 import 'package:expense_manager/screens/login_page/controller/login_page_viewmodel.dart';
 import 'package:expense_manager/screens/login_page/view/login_page_view.dart';
 import 'package:flutter/material.dart';
@@ -146,7 +147,7 @@ class EnterOtpPageViewModel extends StateNotifier<EnterOtpState> {
       if (context.mounted) {
         if (result) {
           _ref.read(loginPageViewModelProvider.notifier).resetState();
-          context.pushReplacement('/');
+          context.go(ExpensesDashboardPageView.routePath);
         } else {
           _showSnackBar(context, 'Invalid OTP');
         }

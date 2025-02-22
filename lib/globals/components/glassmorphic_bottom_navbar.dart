@@ -3,18 +3,23 @@ import 'dart:ui';
 
 import 'package:expense_manager/config/colors_config.dart';
 import 'package:expense_manager/globals/providers/bottom_navbar_viewmodel.dart';
+import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
+import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GlassmorphicBottomNavigationBar extends ConsumerStatefulWidget {
   final int selectedIndex;
-  final Function(int) onItemTapped;
+  final Function(String) onItemTapped;
 
-  final pages = [
-    Icons.dashboard,
-    Icons.account_balance_wallet,
-    Icons.bar_chart,
-    Icons.person
+  final List<Map<String, dynamic>> pages = [
+    {"icon": Icons.dashboard, "route": ExpensesDashboardPageView.routePath},
+    {
+      "icon": Icons.account_balance_wallet,
+      "route": ExpensesDashboardPageView.routePath
+    },
+    {"icon": Icons.bar_chart, "route": ExpensesDashboardPageView.routePath},
+    {"icon": Icons.person, "route": UserAccountPageView.routePath}
   ];
 
   GlassmorphicBottomNavigationBar({
@@ -82,9 +87,9 @@ class _GlassmorphicBottomNavigationBarState
                 )
               ],
               border: Border(
-                top: BorderSide(color: ColorsConfig.textColor2, width: 1),
-                left: BorderSide(color: ColorsConfig.textColor2, width: 1),
-                right: BorderSide(color: ColorsConfig.textColor2, width: 1),
+                top: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
+                left: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
+                right: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
               ),
             ),
             child: Row(
@@ -95,7 +100,10 @@ class _GlassmorphicBottomNavigationBarState
                 return InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
-                  onTap: () => {viewModel.changeBottomNavbarIndex(index)},
+                  onTap: () {
+                    viewModel.changeBottomNavbarIndex(index);
+                    widget.onItemTapped(value["route"]);
+                  },
                   child: Container(
                     color: Colors.transparent,
                     child: Column(
@@ -123,7 +131,7 @@ class _GlassmorphicBottomNavigationBarState
                           ),
                         ),
                         Icon(
-                          value,
+                          value["icon"],
                           size: screenSize.width * .076,
                           color: index == state.curIndex
                               ? ColorsConfig.textColor2
