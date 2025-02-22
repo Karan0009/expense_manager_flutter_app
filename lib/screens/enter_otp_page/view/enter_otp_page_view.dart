@@ -1,10 +1,9 @@
-import 'dart:developer';
-
 import 'package:dotted_border/dotted_border.dart';
 import 'package:expense_manager/config/colors_config.dart';
 import 'package:expense_manager/screens/enter_otp_page/controller/enter_otp_page_viewmodel.dart';
 import 'package:expense_manager/screens/login_page/controller/login_page_viewmodel.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:pinput/pinput.dart';
@@ -17,6 +16,7 @@ class EnterOtpPageView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final loginState = ref.watch(loginPageViewModelProvider);
     // final otpPageState = ref.watch(enterOtpPageViewModelProvider);
+    final state = ref.watch(enterOtpPageViewModelProvider);
     final viewModel = ref.read(enterOtpPageViewModelProvider.notifier);
 
     final defaultPinTheme = PinTheme(
@@ -76,6 +76,17 @@ class EnterOtpPageView extends ConsumerWidget {
                     Pinput(
                       length: 6,
                       defaultPinTheme: defaultPinTheme,
+                      validator: (String? value) {
+                        if (value == null || value.isEmpty) {
+                          return 'PIN cannot be empty';
+                        }
+                        if (value.length != 6) {
+                          return 'PIN must be 6 digits';
+                        }
+                        return null;
+                      },
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      keyboardType: TextInputType.number,
                       focusedPinTheme: defaultPinTheme.copyWith(
                         decoration: defaultPinTheme.decoration?.copyWith(
                           border: Border(
@@ -85,16 +96,13 @@ class EnterOtpPageView extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      onCompleted: (pin) {
-                        log(pin);
-                        // Handle OTP completion
-                      },
+                      onCompleted: (pin) => viewModel.onOtpFilled(context, pin),
                     ),
                     const SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () => viewModel.onLoginClicked(context),
+                        onPressed: () => viewModel.onOtpSubmit(context),
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16.0),
                           backgroundColor: ColorsConfig.color2,
@@ -102,21 +110,31 @@ class EnterOtpPageView extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        child: Text(
-                          'Submit OTP',
-                          style: TextStyle(
-                            color: ColorsConfig.textColor2,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: GoogleFonts.inter().fontFamily,
-                          ),
-                        ),
+                        child: state.isLoading
+                            ? Container(
+                                color: Colors.transparent,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: ColorsConfig.textColor2,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Submit OTP',
+                                style: TextStyle(
+                                  color: ColorsConfig.textColor2,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 20),
                     Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                       GestureDetector(
-                        onTap: () => viewModel.onCreateAccountClicked(context),
+                        onTap: () =>
+                            viewModel.changePhoneNumberClickHandler(context),
                         child: DottedBorder(
                           color: ColorsConfig.color3,
                           strokeCap: StrokeCap.round,
@@ -150,16 +168,61 @@ class EnterOtpPageView extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 20),
-                      Text(
-                        'Resent OTP in 15',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: GoogleFonts.inter().fontFamily,
-                          color: ColorsConfig.textColor2.withValues(
-                            alpha: 0.75,
-                          ),
-                        ),
+                      const SizedBox(width: 10),
+                      Container(
+                        width: 1,
+                        height: 20,
+                        color: ColorsConfig.textColor2,
+                      ),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        width: 140,
+                        child: state.isResendEnabled
+                            ? GestureDetector(
+                                onTap: () => viewModel.resendOtp(context),
+                                child: DottedBorder(
+                                  color: ColorsConfig.color3,
+                                  strokeCap: StrokeCap.round,
+                                  customPath: (size) {
+                                    return Path()
+                                      ..moveTo(0, 20)
+                                      ..lineTo(size.width, 20);
+                                  },
+                                  dashPattern: [1, 2],
+                                  radius: Radius.circular(100),
+                                  borderType: BorderType.RRect,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.refresh,
+                                        color: ColorsConfig.color3,
+                                        size: 12,
+                                      ),
+                                      Text(
+                                        'Resend OTP',
+                                        style: TextStyle(
+                                          color: ColorsConfig.color3,
+                                          fontFamily:
+                                              GoogleFonts.inter().fontFamily,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Resent OTP in ${viewModel.getResendTimeString()}',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  wordSpacing: 1,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                  color: ColorsConfig.textColor2.withValues(
+                                    alpha: 0.75,
+                                  ),
+                                ),
+                              ),
                       ),
                     ]),
                   ],

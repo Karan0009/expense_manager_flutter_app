@@ -48,6 +48,7 @@ class LoginPageView extends ConsumerWidget {
                       keyboardType: TextInputType.phone,
                       cursorColor: ColorsConfig.textColor2,
                       onChanged: loginViewModel.onPhoneNumberChanged,
+                      maxLength: 10,
                       cursorHeight: 17,
                       cursorWidth: 1,
                       style: TextStyle(
@@ -56,6 +57,7 @@ class LoginPageView extends ConsumerWidget {
                         fontFamily: GoogleFonts.inter().fontFamily,
                       ),
                       decoration: InputDecoration(
+                        counterText: '',
                         prefixIcon: Center(
                           heightFactor: 0.5,
                           widthFactor: 0,
@@ -167,15 +169,26 @@ class LoginPageView extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                         ),
-                        child: Text(
-                          'Login',
-                          style: TextStyle(
-                            color: ColorsConfig.textColor2,
-                            fontSize: 17,
-                            fontWeight: FontWeight.w800,
-                            fontFamily: GoogleFonts.inter().fontFamily,
-                          ),
-                        ),
+                        child: loginState.isLoading
+                            ? Container(
+                                color: Colors.transparent,
+                                width: 30,
+                                height: 30,
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: ColorsConfig.textColor2,
+                                  ),
+                                ),
+                              )
+                            : Text(
+                                'Login',
+                                style: TextStyle(
+                                  color: ColorsConfig.textColor2,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
+                                  fontFamily: GoogleFonts.inter().fontFamily,
+                                ),
+                              ),
                       ),
                     ),
                     const SizedBox(height: 20),

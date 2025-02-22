@@ -51,19 +51,28 @@ class CreateAccountPageViewModel extends StateNotifier<LoginState> {
     }
 
     state = state.copyWith(isLoading: true);
+    try {
+      final otp = await _authRepository.getOtp(
+          state.phoneNumber, state.isTermsAccepted);
+      // {
+      //   'phone': ,
+      //   'is_terms_accepted': state.isTermsAccepted,
+      //   'is_register': true,
+      // }
+      state = state.copyWith(otpInfo: otp);
 
-    final otp = await _authRepository.getOtp({
-      'phone': state.phoneNumber,
-      'is_terms_accepted': state.isTermsAccepted,
-      'is_register': true,
-    });
-
-    state = state.copyWith(isLoading: false);
-
-    if (otp != null && context.mounted) {
-      context.go(EnterOtpPageView.routePath);
-    } else if (otp == null && context.mounted) {
-      _showSnackBar(context, 'Failed to get OTP');
+      state = state.copyWith(isLoading: false);
+      if (otp != null && context.mounted) {
+        context.go(EnterOtpPageView.routePath);
+        // context.goNamed(AppRoutes.loginOtpPage);
+      } else if (otp == null && context.mounted) {
+        _showSnackBar(context, 'Failed to get OTP');
+      }
+    } catch (e) {
+      state = state.copyWith(isLoading: false);
+      if (context.mounted) {
+        _showSnackBar(context, 'Failed to get OTP');
+      }
     }
   }
 

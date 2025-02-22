@@ -5,6 +5,7 @@ class ColorsConfig {
   static const Color color1 = Color.fromRGBO(37, 43, 55, 1);
   static const Color color2 = Color.fromRGBO(0, 125, 250, 1);
   static const Color color3 = Color.fromRGBO(54, 191, 250, 1);
+  static const Color color4 = Color.fromRGBO(65, 70, 81, 1);
   static const Color textColor1 = Color.fromRGBO(113, 118, 128, 1);
   static const Color textColor2 = Color.fromRGBO(255, 255, 255, 1);
   static const Color textColor3 = Color.fromRGBO(213, 215, 218, 1);

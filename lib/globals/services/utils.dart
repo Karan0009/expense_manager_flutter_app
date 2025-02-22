@@ -4,12 +4,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 
 class Utils {
-  // 1. Delay Function
   static Future<void> delay(int milliseconds) async {
     await Future.delayed(Duration(milliseconds: milliseconds));
   }
 
-  // 2. Date Formatting (Using Intl)
   static String formatDate(DateTime date, {String format = 'yMMMMd'}) {
     try {
       return DateFormat(format).format(date);
@@ -18,7 +16,6 @@ class Utils {
     }
   }
 
-  // 3. Time Ago (Relative Time Calculation)
   static String timeAgo(DateTime date) {
     final now = DateTime.now();
     final difference = now.difference(date);
@@ -34,8 +31,8 @@ class Utils {
     }
   }
 
-  // 4. Parse String to DateTime
-  static DateTime? parseDate(String dateString, {String format = 'y-MM-dd'}) {
+  static DateTime? parseDate(String dateString,
+      {String format = 'yyyy-MM-dd'}) {
     try {
       return DateFormat(format).parse(dateString);
     } catch (e) {
@@ -43,19 +40,23 @@ class Utils {
     }
   }
 
-  // 5. Validate Email
   static bool isValidEmail(String email) {
     final regex = RegExp(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$");
     return regex.hasMatch(email);
   }
 
-  // 6. Capitalize First Letter of String
+  static bool isValidNumber(String? str) {
+    if (str == null) return false;
+
+    final regex = RegExp(r'^[0-9]+$');
+    return regex.hasMatch(str);
+  }
+
   static String capitalize(String text) {
     if (text.isEmpty) return text;
     return text[0].toUpperCase() + text.substring(1).toLowerCase();
   }
 
-  // 7. Generate Random Color
   static Color randomColor() {
     final random = Random();
     return Color.fromARGB(
@@ -66,7 +67,6 @@ class Utils {
     );
   }
 
-  // 8. Safe Division
   static double safeDivide(num numerator, num denominator,
       {double fallback = 0.0}) {
     return denominator != 0 ? numerator / denominator : fallback;

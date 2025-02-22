@@ -10,13 +10,24 @@ final sharedPrefsRepoProvider =
     Provider<SharedPrefsRepo>((ref) => SharedPrefsRepo());
 
 class SharedPrefsRepo {
-  final String _tokenKey = "COOKIE_TOKEN";
+  final String _accessTokenKey = "ACCESS_TOKEN";
+  final String _refreshTokenKey = "REFRESH_TOKEN";
   final String _currentUserKey = "CURRENT_USER";
   final _name = "SHARED_PREFS_REPO";
 
-  Future<String?> getCookie() async {
+  Future<String?> getAccessToken() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    final cookie = prefs.getString(_tokenKey);
+    final cookie = prefs.getString(_accessTokenKey);
+    if (AppConfig.devMode) {
+      log("Reading cookie", name: _name);
+      log("Data : $cookie", name: _name);
+    }
+    return cookie;
+  }
+
+  Future<String?> getRefreshToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final cookie = prefs.getString(_refreshTokenKey);
     if (AppConfig.devMode) {
       log("Reading cookie", name: _name);
       log("Data : $cookie", name: _name);
@@ -44,13 +55,29 @@ class SharedPrefsRepo {
     prefs.setString(_currentUserKey, jsonEncode(user.toJson()));
   }
 
-  FutureVoid setCookie(String cookie) async {
+  FutureVoid setRefreshToken(String token) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (AppConfig.devMode) {
-      log("Saving cookie", name: _name);
-      log("Data : $cookie", name: _name);
+      log("Saving refresh_token", name: _name);
     }
-    prefs.setString(_tokenKey, cookie);
+    prefs.setString(_refreshTokenKey, token);
+  }
+
+  FutureVoid setAccessToken(String token) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (AppConfig.devMode) {
+      log("Saving refresh_token", name: _name);
+    }
+    prefs.setString(_accessTokenKey, token);
+  }
+
+  FutureVoid setKey(String key, String data) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (AppConfig.devMode) {
+      log("Saving key", name: _name);
+      log("Data : $data", name: _name);
+    }
+    prefs.setString(key, data);
   }
 
   FutureVoid clear() async {
