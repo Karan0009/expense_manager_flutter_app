@@ -6,10 +6,20 @@ class ColorsConfig {
   static const Color color2 = Color.fromRGBO(0, 125, 250, 1);
   static const Color color3 = Color.fromRGBO(54, 191, 250, 1);
   static const Color color4 = Color.fromRGBO(65, 70, 81, 1);
+  static const Color color5 = Color.fromRGBO(24, 29, 39, 1);
   static const Color textColor1 = Color.fromRGBO(113, 118, 128, 1);
   static const Color textColor2 = Color.fromRGBO(255, 255, 255, 1);
   static const Color textColor3 = Color.fromRGBO(213, 215, 218, 1);
+  static const Color textColor4 = Color.fromRGBO(233, 234, 235, 1);
+  static const Color textColor5 = Color.fromRGBO(164, 167, 174, 1);
   static const Color bgColor1 = Color.fromRGBO(0, 0, 0, 1);
+  static const Color bgColor2 = Color.fromRGBO(10, 13, 18, 1);
+
+  static const Color lightBgColor1 = Color.fromRGBO(39, 17, 95, 0.4);
+  static const Color lightBgColor2 = Color.fromRGBO(81, 28, 16, 0.3);
+  static const Color lightBgColor3 = Color.fromRGBO(81, 11, 36, 0.3);
+
+  static const Color bgShadowColor1 = Color.fromRGBO(52, 64, 84, 0.06);
 
   static const Color primaryVariant = Color(0xFF3700B3);
 

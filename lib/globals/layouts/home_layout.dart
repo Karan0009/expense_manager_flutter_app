@@ -28,7 +28,8 @@ class _HomeLayoutState extends State<HomeLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return SafeArea(
+        child: Scaffold(
       body: SizedBox(
         width: double.infinity,
         height: double.infinity,
@@ -37,6 +38,6 @@ class _HomeLayoutState extends State<HomeLayout> {
       backgroundColor: ColorsConfig.bgColor1,
       bottomNavigationBar: GlassmorphicBottomNavigationBar(
           selectedIndex: selectedIndex, onItemTapped: _goBranch),
-    );
+    ));
   }
 }
