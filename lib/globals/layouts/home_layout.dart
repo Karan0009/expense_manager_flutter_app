@@ -1,4 +1,4 @@
-import 'package:expense_manager/config/colors_config.dart';
+import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/globals/components/glassmorphic_bottom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';

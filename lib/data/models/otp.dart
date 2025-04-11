@@ -3,33 +3,34 @@
 import 'package:expense_manager/core/base/base_model.dart';
 
 class Otp implements BaseModel {
-  final String code;
+  final String otp_code;
   final String retry_after;
   final String valid_till;
 
   Otp(
-      {required this.code,
+      {required this.otp_code,
       required this.retry_after,
       required this.valid_till});
 
   @override
   factory Otp.fromJson(Map<String, dynamic> json) {
-    if (json['code'] == null ||
+    if (json['otp_code'] == null ||
         json['retry_after'] == '' ||
-        json['valid_till'] == '') {
+        json['valid_till'] == null ||
+        json['valid_till'].toString() == '') {
       throw Exception("invalid values");
     }
     return Otp(
-      code: json['code'] as String,
-      retry_after: json['retry_after'] as String,
-      valid_till: json['valid_till'] as String,
+      otp_code: (json['otp_code'] ?? '').toString(),
+      retry_after: (json['retry_after'] ?? '').toString(),
+      valid_till: (json['valid_till'] ?? '').toString(),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
     return {
-      'code': code,
+      'otp_code': otp_code,
       'retry_after': retry_after,
       'valid_till': valid_till,
     };
@@ -37,13 +38,13 @@ class Otp implements BaseModel {
 
   @override
   String toString() {
-    return 'User{id: $code , retry_after: $retry_after, valid_till: $valid_till}';
+    return 'Otp{id: $otp_code , retry_after: $retry_after, valid_till: $valid_till}';
   }
 
   @override
   Otp clone() {
     return Otp(
-      code: code,
+      otp_code: otp_code,
       retry_after: retry_after,
       valid_till: valid_till,
     );

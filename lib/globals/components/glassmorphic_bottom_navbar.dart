@@ -1,10 +1,11 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:expense_manager/config/colors_config.dart';
+import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/globals/providers/bottom_navbar_viewmodel.dart';
-import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
-import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
+// import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
+// import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,13 +14,13 @@ class GlassmorphicBottomNavigationBar extends ConsumerStatefulWidget {
   final Function(String) onItemTapped;
 
   final List<Map<String, dynamic>> pages = [
-    {"icon": Icons.dashboard, "route": ExpensesDashboardPageView.routePath},
+    {"icon": Icons.dashboard, "route": DashboardPageView.routePath},
     {
       "icon": Icons.account_balance_wallet,
-      "route": ExpensesDashboardPageView.routePath
+      "route": DashboardPageView.routePath
     },
-    {"icon": Icons.bar_chart, "route": ExpensesDashboardPageView.routePath},
-    {"icon": Icons.person, "route": UserAccountPageView.routePath}
+    {"icon": Icons.bar_chart, "route": DashboardPageView.routePath},
+    {"icon": Icons.person, "route": DashboardPageView.routePath}
   ];
 
   GlassmorphicBottomNavigationBar({

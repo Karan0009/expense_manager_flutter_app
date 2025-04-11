@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'package:expense_manager/config/app_config.dart';
-import 'package:expense_manager/core/http_type_def.dart';
+import 'package:expense_manager/core/http/http_type_def.dart';
 import 'package:expense_manager/data/models/user.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

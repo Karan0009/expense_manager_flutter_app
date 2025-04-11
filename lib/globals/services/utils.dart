@@ -66,17 +66,4 @@ class Utils {
       random.nextInt(256),
     );
   }
-
-  static double safeDivide(num numerator, num denominator,
-      {double fallback = 0.0}) {
-    return denominator != 0 ? numerator / denominator : fallback;
-  }
-
-  static double degreeToRadian(double degrees) {
-    return degrees * (pi / 180);
-  }
-
-  static double radianToDegree(double radians) {
-    return radians * (180 / pi);
-  }
 }

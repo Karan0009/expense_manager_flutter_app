@@ -1,7 +1,7 @@
 // ignore_for_file: unused_element, unused_field
 
 import 'package:expense_manager/data/models/bottom_navbar_state.dart';
-import 'package:expense_manager/data/repositories/auth_repository.dart';
+// import 'package:expense_manager/data/repositories/auth_repository.dart';
 import 'package:expense_manager/globals/components/glassmorphic_snackbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,18 +15,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final bottomNavbarViewModelProvider =
     StateNotifierProvider<BottomNavbarViewModel, BottomNavbarState>((ref) {
-  final repo = ref.watch(authRepositoryProvider);
+  // final repo = ref.watch(authRepositoryProvider);
   return BottomNavbarViewModel(
-    repo,
     ref,
   );
 });
 
 class BottomNavbarViewModel extends StateNotifier<BottomNavbarState> {
-  final AuthRepository _authRepository;
+  // final AuthRepository _authRepository;
   final Ref _ref;
-  BottomNavbarViewModel(this._authRepository, this._ref)
-      : super(BottomNavbarState());
+  BottomNavbarViewModel(this._ref) : super(BottomNavbarState());
 
   void changeBottomNavbarIndex(int newIndex) {
     state = state.copyWith(curIndex: newIndex);

@@ -7,4 +7,6 @@ class FailureMessage {
   static const jsonParsingFailed = "FAILED TO PARSE JSON RESPONSE";
 
   static const authTokenEmpty = "AUTH TOKEN EMPTY";
+
+  static const postTooManyRequests = 'POST TOO MANY REQUESTS';
 }
