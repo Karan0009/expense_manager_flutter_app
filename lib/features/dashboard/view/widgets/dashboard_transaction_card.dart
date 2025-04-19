@@ -1,8 +1,11 @@
+import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/data/models/transactions/user_transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class DashboardTransactionCard extends StatefulWidget {
-  final UserTransaction transaction;
+  final UserTransaction? transaction;
   const DashboardTransactionCard({required this.transaction, super.key});
 
   @override
@@ -13,64 +16,97 @@ class DashboardTransactionCard extends StatefulWidget {
 class _DashboardTransactionCardState extends State<DashboardTransactionCard> {
   @override
   Widget build(BuildContext context) {
+    if (widget.transaction == null) {
+      return Text(
+        'Err loading transaction',
+        style: Theme.of(context).textTheme.bodyMedium,
+      );
+    }
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E0E10), // dark card color
-        borderRadius: BorderRadius.circular(16),
+        color: ColorsConfig.bgColor2,
+        boxShadow: [
+          BoxShadow(
+            color: ColorsConfig.bgShadowColor1,
+            offset: Offset(0, 4),
+            blurRadius: 5,
+            spreadRadius: 0,
+          )
+        ],
+        border: Border.all(
+          color: ColorsConfig.color5,
+          width: 1,
+          style: BorderStyle.solid,
+        ),
+        borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
         children: [
-          // Icon
           Container(
-            width: 40,
-            height: 40,
+            width: 50,
+            height: 50,
             decoration: BoxDecoration(
-              color: Colors.grey[900],
+              color: ColorsConfig.color5,
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Center(child: Text('hello')),
+            child: Center(
+                child: Text(widget.transaction!.recipientName
+                    .substring(0, 2)
+                    .toUpperCase())),
           ),
-
           const SizedBox(width: 12),
-
-          // Text Info
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'this is expense',
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                  widget.transaction!.recipientName,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        color: ColorsConfig.textColor5,
+                      ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '₹2342',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  DateFormat('dd MMM, yyyy').format(
+                      widget.transaction!.transactionDatetime ??
+                          DateTime.now()),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        color: ColorsConfig.textColor5,
+                      ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  TransactionHelpers.formatStringAmount(
+                      widget.transaction!.amount),
+                  style: Theme.of(context).textTheme.bodyLarge!.copyWith(
+                        color: ColorsConfig.textColor4,
+                        fontWeight: FontWeight.w500,
+                      ),
                 ),
               ],
             ),
           ),
-
-          // Add Button
           TextButton.icon(
             onPressed: () {},
-            icon: const Icon(Icons.add, color: Colors.grey),
-            label: const Text(
+            icon: const Icon(
+              Icons.add,
+              size: 24,
+              color: ColorsConfig.textColor3,
+            ),
+            label: Text(
               "Add",
-              style: TextStyle(color: Colors.grey),
+              style: Theme.of(context).textTheme.labelMedium!.copyWith(
+                    color: ColorsConfig.textColor5,
+                  ),
             ),
             style: TextButton.styleFrom(
-              backgroundColor: const Color(0xFF1A1A1C),
+              backgroundColor: ColorsConfig.color1,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(8),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
             ),
           ),
         ],

@@ -1,7 +1,7 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/globals/providers/bottom_navbar_viewmodel.dart';
 // import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
@@ -53,7 +53,7 @@ class _GlassmorphicBottomNavigationBarState
     final state = ref.watch(bottomNavbarViewModelProvider);
     final viewModel = ref.read(bottomNavbarViewModelProvider.notifier);
     final screenSize = MediaQuery.of(context).size;
-    double navbarHeight = max(screenSize.height * 0.11, 70);
+    double navbarHeight = AppUtils.getNavbarHeight(context);
     return
         // Stack(children: [
         //   Positioned(
@@ -69,28 +69,26 @@ class _GlassmorphicBottomNavigationBarState
         bottomRight: Radius.circular(20),
       ),
       child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 30.0, sigmaY: 30.0),
+        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
         child: Container(
             height: navbarHeight,
             width: screenSize.width * 1.006,
             // padding: EdgeInsets.only(top: 10),
             decoration: BoxDecoration(
-              color: Colors.transparent,
+              color: ColorsConfig.bgColor1.withValues(alpha: 0),
               borderRadius: BorderRadius.only(
                 topLeft: Radius.circular(20),
                 topRight: Radius.circular(20),
               ),
               boxShadow: [
                 BoxShadow(
-                  color: ColorsConfig.bgColor1.withValues(alpha: 0.1),
-                  blurRadius: 20,
+                  color: ColorsConfig.bgColor1.withValues(alpha: 0.6),
+                  blurRadius: 10,
                   offset: Offset(0, 10),
                 )
               ],
               border: Border(
                 top: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
-                left: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
-                right: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
               ),
             ),
             child: Row(
@@ -145,6 +143,7 @@ class _GlassmorphicBottomNavigationBarState
                 );
               }).toList(),
             )
+
             // ListView.builder(
             //   itemCount: widget.pages.length,
             //   padding:

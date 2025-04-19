@@ -29,14 +29,34 @@ class _HomeLayoutState extends State<HomeLayout> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        body: SizedBox(
-          width: double.infinity,
-          height: double.infinity,
-          child: widget.navigationShell,
-        ),
-        bottomNavigationBar: GlassmorphicBottomNavigationBar(
-            selectedIndex: selectedIndex, onItemTapped: _goBranch),
-      ),
+          body: Stack(
+        children: [
+          // Your main content that should extend behind the navbar
+          Positioned.fill(
+            child: widget.navigationShell,
+          ),
+          // Position your bottom navigation bar at the bottom
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: GlassmorphicBottomNavigationBar(
+              selectedIndex: selectedIndex,
+              onItemTapped: _goBranch,
+            ),
+          ),
+        ],
+      )
+// SizedBox(
+//           width: double.infinity,
+//           height: double.infinity,
+//           child: widget.navigationShell,
+//         ),
+          // bottomNavigationBar: GlassmorphicBottomNavigationBar(
+          //   selectedIndex: selectedIndex,
+          //   onItemTapped: _goBranch,
+          // ),
+          ),
     );
   }
 }

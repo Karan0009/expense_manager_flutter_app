@@ -6,6 +6,7 @@ import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/data/models/otp.dart';
+import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/create_account_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/login_page_view.dart';
 import 'package:expense_manager/features/login_page/viewmodel/auth_viewmodel.dart';
@@ -167,7 +168,7 @@ class _EnterOtpPageState extends ConsumerState<EnterOtpPageView> {
                                 context, 'Some error occured');
                           }, (token) {
                             if (token != null) {
-                              AppUtils.showSnackBar(context, 'OTP is valid!');
+                              _navigateToHome(context);
                             } else {
                               AppUtils.showSnackBar(context, 'Invalid OTP');
                             }
@@ -306,6 +307,10 @@ class _EnterOtpPageState extends ConsumerState<EnterOtpPageView> {
       ),
     );
   }
+}
+
+void _navigateToHome(BuildContext context) {
+  context.pushReplacement(DashboardPageView.routePath);
 }
 
 void changePhoneNumberClickHandler(BuildContext context, bool isCreateAccount) {

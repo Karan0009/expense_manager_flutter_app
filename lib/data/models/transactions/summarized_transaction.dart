@@ -55,7 +55,7 @@ class SummarizedTransaction {
       summaryStart: map['summary_start'] as String,
       subCatId: subCatIdInt ?? 0,
       subCategory:
-          SubCategory.fromMap(map['SubCategory'] as Map<String, dynamic>),
+          SubCategory.fromMap(map['sub_category'] as Map<String, dynamic>),
     );
   }
 

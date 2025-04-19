@@ -1,4 +1,6 @@
+import 'package:expense_manager/features/dashboard/view/widgets/no_transactions_widget.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/with_transactions_dashboard_view.dart';
+import 'package:expense_manager/features/dashboard/viewmodel/monthly_summary_viewmodel/monthly_summary_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -23,12 +25,7 @@ class DashboardPageView extends ConsumerWidget {
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16.0 : constraints.maxWidth * 0.2,
               ),
-              child:
-                  // TODO: REF WATCH TRANSACTIONS PROVIDERS HERE
-                  // NoTransactionsWidget(),
-                  SingleChildScrollView(
-                child: const WithTransactionsDashboardView(),
-              ),
+              child: WithTransactionsDashboardView(),
             ),
           ),
         );

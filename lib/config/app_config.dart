@@ -23,6 +23,8 @@ class AppConfig {
 
   static const String sortByAsc = 'ASC';
   static const String sortByDesc = 'DESC';
+  static const int restClientGetMaxLimit = 10;
+  static const int uncategorizedSubCatId = 1;
 }
 
 enum DateRangeType { week, month, year }

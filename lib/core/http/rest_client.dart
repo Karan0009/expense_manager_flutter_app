@@ -29,7 +29,7 @@ class RestClient {
           BaseOptions(
             baseUrl: AppConfig.baseApiUrl,
             connectTimeout: Duration(seconds: 10),
-            receiveTimeout: Duration(seconds: 3),
+            receiveTimeout: Duration(seconds: 5),
             validateStatus: (status) => status! < 500,
             headers: {
               "Content-Type": "application/json",

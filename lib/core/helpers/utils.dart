@@ -92,4 +92,9 @@ class AppUtils {
   static double radianToDegree(double radians) {
     return radians * (180 / pi);
   }
+
+  static double getNavbarHeight(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    return max(screenSize.height * 0.11, 70);
+  }
 }

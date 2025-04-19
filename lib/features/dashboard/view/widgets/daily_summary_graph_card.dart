@@ -6,6 +6,7 @@ import 'package:expense_manager/features/dashboard/viewmodel/daily_summary_graph
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 
 class DailySummaryGraphCard extends StatefulWidget {
@@ -239,7 +240,9 @@ class _BarChartSample5State extends State<BarChartSample5> {
                 barTouchData: BarTouchData(
                   handleBuiltInTouches: false,
                   touchTooltipData: BarTouchTooltipData(
+                    tooltipHorizontalAlignment: FLHorizontalAlignment.center,
                     fitInsideHorizontally: true,
+                    tooltipRoundedRadius: 15,
                     tooltipBorder: BorderSide(
                       color: ColorsConfig.color7,
                       width: 1,
@@ -252,11 +255,12 @@ class _BarChartSample5State extends State<BarChartSample5> {
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       return BarTooltipItem(
                         TransactionHelpers.formatIndianCurrency(rod.toY),
-                        const TextStyle(
-                          color: Colors.white, // Text color
-                          fontSize: 14, // Slightly bigger font
-                          fontWeight: FontWeight.bold, // Bold text
+                        GoogleFonts.lexend(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
+                        textAlign: TextAlign.center,
                       );
                     },
                   ),
@@ -264,10 +268,10 @@ class _BarChartSample5State extends State<BarChartSample5> {
                     if (!event.isInterestedForInteractions ||
                         barTouchResponse == null ||
                         barTouchResponse.spot == null) {
-                      // setState(() {
-                      //   touchedIndex = -1;
-                      //   showTodayBarTooltip = true;
-                      // });
+                      setState(() {
+                        touchedIndex = -1;
+                        // showTodayBarTooltip = true;
+                      });
                       return;
                     }
                     // final rodIndex = barTouchResponse.spot!.touchedRodDataIndex;
@@ -422,6 +426,8 @@ class ExpensesWeeklySummaryCard extends ConsumerWidget {
                       );
                     },
                     error: (error, stackTrace) {
+                      print(error);
+                      print(stackTrace);
                       return Text(
                         'Error loading data',
                         style: Theme.of(context).textTheme.bodyMedium,

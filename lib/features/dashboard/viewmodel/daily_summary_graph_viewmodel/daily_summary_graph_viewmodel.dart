@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:dartz/dartz.dart';
 import 'package:expense_manager/config/app_config.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
-import 'package:expense_manager/core/http/http_failure.dart';
 import 'package:expense_manager/core/http/http_type_def.dart';
 import 'package:expense_manager/data/repositories/transaction_summary/transaction_summary_remote_repository.dart';
 import 'package:expense_manager/features/dashboard/models/dashboard_daily_summary_graph_state.dart';
@@ -33,11 +32,11 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
 
   FutureEither<DashboardDailySummaryGraphState>
       getCurrentWeeksDayWiseSummary() async {
-    final curDate = DateTime.tryParse('2025-02-04');
-    if (curDate == null) {
-      return Left(
-          HttpFailure(message: 'invalid current date', statusCode: 500));
-    }
+    final curDate = DateTime.now();
+    // if (curDate == null) {
+    //   return Left(
+    //       HttpFailure(message: 'invalid current date', statusCode: 500));
+    // }
     final dateRange =
         AppUtils.getFormattedDateRange(curDate, DateRangeType.week);
     final res = await ref
@@ -47,7 +46,7 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
           toDate: DateFormat('yyyy-MM-dd').format(dateRange['end']),
           summaryType: AppConfig.summaryTypeDaily,
           sortBy: 'transaction_datetime',
-          orderBy: AppConfig.sortByDesc,
+          orderBy: AppConfig.sortByAsc,
         );
 
     return res.fold(
@@ -55,9 +54,12 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
         return Left(error);
       },
       (data) {
-        BigInt totalAmount = data.data
-            .map((e) => e.totalAmount)
-            .reduce((value, element) => value + element);
+        BigInt totalAmount = BigInt.from(0);
+        if (data.data.isNotEmpty) {
+          totalAmount = data.data
+              .map((e) => e.totalAmount)
+              .reduce((value, element) => value + element);
+        }
         return Right(DashboardDailySummaryGraphState(
           dailySummarizedTransactions: data.data,
           totalSummarizedAmount: totalAmount,

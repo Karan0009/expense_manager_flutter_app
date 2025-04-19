@@ -21,7 +21,7 @@ class ColorsConfig {
   static const Color lightBgColor2 = Color.fromRGBO(81, 28, 16, 0.3);
   static const Color lightBgColor3 = Color.fromRGBO(81, 11, 36, 0.3);
 
-  static const Color bgShadowColor1 = Color.fromRGBO(52, 64, 84, 0.06);
+  static const Color bgShadowColor1 = Color.fromRGBO(52, 64, 84, 0.15);
 
   static const Color primaryVariant = Color(0xFF3700B3);
 

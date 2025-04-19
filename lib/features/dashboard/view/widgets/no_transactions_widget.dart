@@ -1,4 +1,5 @@
 import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/core/layouts/above_navbar_layout.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,49 +9,52 @@ class NoTransactionsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Column(
-      children: [
-        Expanded(
-          flex: 1,
-          child: Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(
-                  child: Image.asset(
-                    'assets/images/piggy_empty_state_1.png',
-                    width: 300,
-                    height: 300,
+    return AboveNavbarLayout(
+      child: Column(
+        children: [
+          Expanded(
+            flex: 1,
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    child: Image.asset(
+                      'assets/images/piggy_empty_state_1.png',
+                      width: 300,
+                      height: 300,
+                    ),
                   ),
-                ),
-                Text(
-                  'No Expense Added',
-                  style: Theme.of(context).textTheme.headlineLarge,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Your expenses will be automatically added.',
-                  textAlign: TextAlign.center,
-                  style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                        fontWeight: FontWeight.w400,
-                        color: ColorsConfig.textColor2.withValues(alpha: 0.75),
-                      ),
-                ),
-              ],
+                  Text(
+                    'No Expense Added',
+                    style: Theme.of(context).textTheme.headlineLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Your expenses will be automatically added.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                          fontWeight: FontWeight.w400,
+                          color:
+                              ColorsConfig.textColor2.withValues(alpha: 0.75),
+                        ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.only(bottom: 16.0, left: 4, right: 4),
-          child: SizedBox(
-            width: double.infinity,
-            child: CustomButton(
-                onPressed: () => _showAddExpenseBottomSheet(context),
-                isLoading: false,
-                buttonText: 'Add Manually'),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0, left: 4, right: 4),
+            child: SizedBox(
+              width: double.infinity,
+              child: CustomButton(
+                  onPressed: () => _showAddExpenseBottomSheet(context),
+                  isLoading: false,
+                  buttonText: 'Add Manually'),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
