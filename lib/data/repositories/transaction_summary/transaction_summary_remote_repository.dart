@@ -3,7 +3,6 @@ import 'package:expense_manager/core/http/rest_client.dart';
 import 'package:expense_manager/core/http/http_failure.dart';
 import 'package:expense_manager/core/http/http_type_def.dart';
 import 'package:expense_manager/data/models/common/api_response.dart';
-import 'package:expense_manager/data/models/transactions/summarized_transaction.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -21,14 +20,15 @@ class TransactionSummaryRemoteRepository {
   TransactionSummaryRemoteRepository({required RestClient restClient})
       : _restClient = restClient;
 
-  FutureEither<ApiResponse<List<SummarizedTransaction>, SummarizedTransaction>>
-      getSummarizedTransactions({
+  FutureEither<ApiResponse<List<T>, T>> getSummarizedTransactions<T>({
     String? onDate,
     String? fromDate,
     String? toDate,
     required String summaryType,
     String? sortBy = 'transaction_datetime',
     required String orderBy,
+    required T Function(Map<String, dynamic>) fromMapFn,
+    String? groupBy,
   }) async {
     try {
       final endpoint = 'v1/transaction/summary';
@@ -45,6 +45,10 @@ class TransactionSummaryRemoteRepository {
         params["to_date"] = toDate;
       }
 
+      if (groupBy != null) {
+        params["group_by"] = groupBy;
+      }
+
       final response = await _restClient.getRequest(
         url: endpoint,
         requireAuth: true,
@@ -57,7 +61,7 @@ class TransactionSummaryRemoteRepository {
         },
         (r) {
           try {
-            if (r.statusCode != 200 && r.data["data"] != null) {
+            if (r.statusCode != 200 || r.data["data"] == null) {
               return Left(
                 HttpFailure(
                   message: r.data["message"] ?? "Failed to fetch data",
@@ -65,10 +69,10 @@ class TransactionSummaryRemoteRepository {
                 ),
               );
             }
-            final val = ApiResponse<List<SummarizedTransaction>,
-                SummarizedTransaction>.fromMap(
+            final val = ApiResponse<List<T>, T>.fromMap(
               r.data,
-              SummarizedTransaction.fromMap,
+              fromMapFn,
+              isDataList: true,
             );
 
             return Right(val);

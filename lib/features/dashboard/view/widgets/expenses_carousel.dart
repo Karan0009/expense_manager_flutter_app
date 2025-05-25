@@ -22,7 +22,6 @@ class _ExpensesCarouselState extends ConsumerState<ExpensesCarousel> {
   final itemsPerPage = 4;
   int _currentSlide = 0;
   final carouselSliderController = CarouselSliderController();
-  // List<Widget> gridItems = [];
 
   List<Widget> _addCarouselDots(int totalSlides) {
     return [
@@ -109,13 +108,16 @@ class _ExpensesCarouselState extends ConsumerState<ExpensesCarousel> {
               }
 
               final slideItems = totalCategories.sublist(start, end);
-              slides.add(buildGrid(slideItems));
+              slides.add(buildGrid(context, slideItems));
             }
             return Column(
+              mainAxisSize: MainAxisSize.max,
               children: [
                 CarouselSlider(
                   carouselController: carouselSliderController,
+                  disableGesture: false,
                   options: CarouselOptions(
+                    scrollDirection: Axis.horizontal,
                     height: 120,
                     autoPlay: false,
                     autoPlayInterval: const Duration(seconds: 3),
@@ -165,15 +167,17 @@ Widget _showSkeletonCardsGrid() {
   );
 }
 
-Widget buildGrid(List<SummarizedTransaction> items) {
+Widget buildGrid(BuildContext context, List<SummarizedTransaction> items) {
   return GridView.builder(
+    physics: const NeverScrollableScrollPhysics(),
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
       mainAxisExtent: 60,
       crossAxisCount: 2,
       crossAxisSpacing: 1,
-      // mainAxisSpacing: 8,
+      mainAxisSpacing: 1,
     ),
     itemCount: items.length,
+    clipBehavior: Clip.hardEdge,
     itemBuilder: (context, index) {
       return gridItem(
         Icons.restaurant,
@@ -187,46 +191,48 @@ Widget buildGrid(List<SummarizedTransaction> items) {
 }
 
 Widget gridItem(IconData icon, String label, String amount) {
-  return Row(
-    children: [
-      Container(
-        width: 40,
-        height: 40,
-        padding: EdgeInsets.all(5),
-        decoration: BoxDecoration(
-          color: getRandomColor(),
-          borderRadius: BorderRadius.circular(100),
-        ),
-        child: Center(
-          child: Icon(icon, size: 20, color: Colors.red),
-        ),
-      ),
-      const SizedBox(width: 15),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: ColorsConfig.textColor5,
-              fontSize: 9,
-              fontWeight: FontWeight.w500,
-              fontFamily: GoogleFonts.inter().fontFamily,
-            ),
+  return SizedBox(
+    child: Row(
+      children: [
+        Container(
+          width: 40,
+          height: 40,
+          padding: EdgeInsets.all(5),
+          decoration: BoxDecoration(
+            color: getRandomColor(),
+            borderRadius: BorderRadius.circular(100),
           ),
-          Text(
-            amount,
-            style: TextStyle(
-              color: ColorsConfig.textColor4,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              fontFamily: GoogleFonts.inter().fontFamily,
-            ),
+          child: Center(
+            child: Icon(icon, size: 20, color: Colors.red),
           ),
-        ],
-      ),
-    ],
+        ),
+        const SizedBox(width: 15),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: TextStyle(
+                color: ColorsConfig.textColor5,
+                fontSize: 9,
+                fontWeight: FontWeight.w500,
+                fontFamily: GoogleFonts.inter().fontFamily,
+              ),
+            ),
+            Text(
+              amount,
+              style: TextStyle(
+                color: ColorsConfig.textColor4,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                fontFamily: GoogleFonts.inter().fontFamily,
+              ),
+            ),
+          ],
+        ),
+      ],
+    ),
   );
 }
 

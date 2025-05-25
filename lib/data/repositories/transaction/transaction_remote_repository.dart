@@ -74,10 +74,193 @@ class TransactionRemoteRepository {
                 ApiResponse<List<UserTransaction>, UserTransaction>.fromMap(
               r.data,
               UserTransaction.fromMap,
+              isDataList: true,
             );
 
             return Right(val);
-            // return Right();
+          } catch (e) {
+            return Left(
+              HttpFailure(
+                message: "Failed to parse response",
+                statusCode: r.statusCode ?? 500,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      return Left(HttpFailure(message: "Unexpected error occurred"));
+    }
+  }
+
+  FutureEither<ApiResponse<UserTransaction, UserTransaction>> create(
+    int amount, {
+    String? recipientName,
+    String? transactionDatetime,
+    int? subCatId,
+  }) async {
+    try {
+      final endpoint = 'v1/transaction';
+
+      Map<String, dynamic> params = {
+        "amount": amount,
+      };
+
+      if (recipientName != null) {
+        params["recipient_name"] = recipientName;
+      }
+      if (transactionDatetime != null) {
+        params["transaction_datetime"] = transactionDatetime;
+      }
+      if (subCatId != null) {
+        params["sub_cat_id"] = subCatId;
+      }
+
+      final response = await _restClient.postRequest(
+        url: endpoint,
+        requireAuth: true,
+        body: params,
+      );
+
+      return response.fold(
+        (l) {
+          return Left(l);
+        },
+        (r) {
+          try {
+            if (r.statusCode != 201 && r.data["data"] != null) {
+              return Left(
+                HttpFailure(
+                  message: r.data["meta"]["message"] ?? "Failed to create data",
+                  statusCode: r.statusCode ?? 500,
+                ),
+              );
+            }
+
+            final val = ApiResponse<UserTransaction, UserTransaction>.fromMap(
+              r.data,
+              UserTransaction.fromMap,
+              isDataList: false,
+            );
+
+            return Right(val);
+          } catch (e) {
+            return Left(
+              HttpFailure(
+                message: "Failed to parse response",
+                statusCode: r.statusCode ?? 500,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      return Left(HttpFailure(message: "Unexpected error occurred"));
+    }
+  }
+
+  FutureEither<ApiResponse<UserTransaction, UserTransaction>> edit(
+    int id, {
+    int? amount,
+    String? recipientName,
+    String? transactionDatetime,
+    int? subCatId,
+  }) async {
+    try {
+      final endpoint = 'v1/transaction/$id';
+
+      Map<String, dynamic> params = {};
+
+      if (amount != null) {
+        params["amount"] = amount;
+      }
+
+      if (recipientName != null) {
+        params["recipient_name"] = recipientName;
+      }
+      if (transactionDatetime != null) {
+        params["transaction_datetime"] = transactionDatetime;
+      }
+      if (subCatId != null) {
+        params["sub_cat_id"] = subCatId;
+      }
+
+      if (params.isEmpty) {
+        return Left(HttpFailure(message: 'empty params'));
+      }
+
+      final response = await _restClient.putRequest(
+        url: endpoint,
+        requireAuth: true,
+        body: params,
+      );
+
+      return response.fold(
+        (l) {
+          return Left(l);
+        },
+        (r) {
+          try {
+            if (r.statusCode != 200 || r.data["data"] == null) {
+              return Left(
+                HttpFailure(
+                  message: r.data["meta"]["message"] ?? "Failed to edit data",
+                  statusCode: r.statusCode ?? 500,
+                ),
+              );
+            }
+
+            final modifiedData = r.data;
+            modifiedData['data']['amount'] =
+                (modifiedData['data']['amount'] as int).toString();
+
+            final val = ApiResponse<UserTransaction, UserTransaction>.fromMap(
+              modifiedData,
+              UserTransaction.fromMap,
+              isDataList: false,
+            );
+
+            return Right(val);
+          } catch (e) {
+            return Left(
+              HttpFailure(
+                message: "Failed to parse response",
+                statusCode: r.statusCode ?? 500,
+              ),
+            );
+          }
+        },
+      );
+    } catch (e) {
+      return Left(HttpFailure(message: "Unexpected error occurred"));
+    }
+  }
+
+  FutureEither<void> delete(int id) async {
+    try {
+      final endpoint = 'v1/transaction/$id';
+
+      final response = await _restClient.deleteRequest(
+        url: endpoint,
+        requireAuth: true,
+      );
+
+      return response.fold(
+        (l) {
+          return Left(l);
+        },
+        (r) {
+          try {
+            if (r.statusCode != 200 || r.data["data"] == null) {
+              return Left(
+                HttpFailure(
+                  message: r.data["meta"]["message"] ?? "Failed to delete data",
+                  statusCode: r.statusCode ?? 500,
+                ),
+              );
+            }
+
+            return Right(null);
           } catch (e) {
             return Left(
               HttpFailure(

@@ -6,7 +6,8 @@ import 'package:flutter/material.dart';
  todo: prefix button is unfinished (don't use it rn, finish it and remove this)
 */
 class CustomButton extends StatelessWidget {
-  final void Function() onPressed;
+  final void Function()? onPressed;
+  final void Function()? onLongPressed;
   final bool isLoading;
   final String buttonText;
   final bool isDisabled;
@@ -18,7 +19,6 @@ class CustomButton extends StatelessWidget {
   final double? containerWidth;
   const CustomButton({
     super.key,
-    required this.onPressed,
     required this.isLoading,
     required this.buttonText,
     this.prefixIcon,
@@ -28,6 +28,8 @@ class CustomButton extends StatelessWidget {
     this.containerHeight,
     this.containerWidth,
     this.isDisabled = false,
+    this.onPressed,
+    this.onLongPressed,
   });
 
   @override
@@ -36,15 +38,23 @@ class CustomButton extends StatelessWidget {
     final defaultBackgroundColor =
         buttonStyle?.backgroundColor?.resolve({}) ?? ColorsConfig.color2;
 
+    // TODO: REFACTOR!!!
     Widget buttonWidget = ElevatedButton(
-      onPressed: prefixIcon == null ? (isDisabled ? null : onPressed) : null,
+      onLongPress: prefixIcon == null
+          ? (isDisabled || isLoading ? null : onLongPressed)
+          : null,
+      onPressed: onLongPressed == null
+          ? (prefixIcon == null
+              ? (isDisabled || isLoading ? null : onPressed)
+              : null)
+          : null,
       style: buttonStyle?.copyWith(
         shadowColor: WidgetStateProperty.resolveWith<Color>(
             (states) => Colors.transparent),
         backgroundColor: WidgetStateProperty.resolveWith<Color>(
           (states) {
             if (isDisabled) {
-              return defaultBackgroundColor.withValues(alpha: 0.6);
+              return defaultBackgroundColor.withValues(alpha: 0.4);
             }
             return defaultBackgroundColor;
           },
@@ -61,9 +71,17 @@ class CustomButton extends StatelessWidget {
     if (prefixIcon == null) {
       return buttonWidget;
     }
+    // TODO: REFACTOR!!!
     List<Widget> children = [prefixIcon!, buttonWidget];
     return GestureDetector(
-      onTap: isDisabled ? null : onPressed,
+      onLongPress: prefixIcon == null
+          ? (isDisabled || isLoading ? null : onLongPressed)
+          : null,
+      onTap: onLongPressed == null
+          ? isDisabled || isLoading
+              ? null
+              : onPressed
+          : null,
       child: Container(
         height: containerHeight ?? 30,
         width: containerWidth ?? 162,

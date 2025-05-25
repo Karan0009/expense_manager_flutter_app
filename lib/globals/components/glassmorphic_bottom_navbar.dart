@@ -54,129 +54,92 @@ class _GlassmorphicBottomNavigationBarState
     final viewModel = ref.read(bottomNavbarViewModelProvider.notifier);
     final screenSize = MediaQuery.of(context).size;
     double navbarHeight = AppUtils.getNavbarHeight(context);
-    return
-        // Stack(children: [
-        //   Positioned(
-        //     top: screenSize.height - navbarHeight,
-        //     bottom: 0,
-        //     left: -1,
-        //     child:
-        ClipRRect(
-      clipBehavior: Clip.hardEdge,
-      // clipper: MyCustomClipper(),
-      borderRadius: BorderRadius.only(
-        bottomLeft: Radius.circular(20),
-        bottomRight: Radius.circular(20),
-      ),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
-        child: Container(
-            height: navbarHeight,
-            width: screenSize.width * 1.006,
-            // padding: EdgeInsets.only(top: 10),
-            decoration: BoxDecoration(
-              color: ColorsConfig.bgColor1.withValues(alpha: 0),
-              borderRadius: BorderRadius.only(
-                topLeft: Radius.circular(20),
-                topRight: Radius.circular(20),
+    return Container(
+      child: ClipRRect(
+        clipBehavior: Clip.hardEdge,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
+          child: Container(
+              height: navbarHeight,
+              width: screenSize.width,
+              decoration: BoxDecoration(
+                color: ColorsConfig.bgColor1.withValues(alpha: 0.5),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(20),
+                  topRight: Radius.circular(20),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: ColorsConfig.bgColor1.withValues(alpha: 0.6),
+                    blurRadius: 10,
+                    offset: Offset(0, 10),
+                  )
+                ],
+                border: Border(
+                  top: BorderSide(
+                    color: ColorsConfig.textColor2.withValues(alpha: 0.4),
+                    width: 0.5,
+                  ),
+                ),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: ColorsConfig.bgColor1.withValues(alpha: 0.6),
-                  blurRadius: 10,
-                  offset: Offset(0, 10),
-                )
-              ],
-              border: Border(
-                top: BorderSide(color: ColorsConfig.textColor2, width: 0.5),
-              ),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: widget.pages.asMap().entries.map((data) {
-                final index = data.key;
-                final value = data.value;
-                return InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  onTap: () {
-                    viewModel.changeBottomNavbarIndex(index);
-                    widget.onItemTapped(value["route"]);
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        AnimatedContainer(
-                          duration: Duration(milliseconds: 1500),
-                          curve: Curves.fastLinearToSlowEaseIn,
-                          margin: EdgeInsets.only(
-                            bottom: index == state.curIndex
-                                ? 0
-                                : screenSize.width * .029,
-                            right: screenSize.width * .0422,
-                            left: screenSize.width * .0422,
-                          ),
-                          width: screenSize.width * .128,
-                          height: index == state.curIndex
-                              ? screenSize.width * .005
-                              : 0,
-                          decoration: BoxDecoration(
-                            color: ColorsConfig.textColor2,
-                            borderRadius: BorderRadius.vertical(
-                              bottom: Radius.circular(10),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: widget.pages.asMap().entries.map((data) {
+                  final index = data.key;
+                  final value = data.value;
+                  return InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    onTap: () {
+                      viewModel.changeBottomNavbarIndex(index);
+                      widget.onItemTapped(value["route"]);
+                    },
+                    child: Container(
+                      color: Colors.transparent,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          AnimatedContainer(
+                            duration: Duration(milliseconds: 1500),
+                            curve: Curves.fastLinearToSlowEaseIn,
+                            margin: EdgeInsets.only(
+                              bottom: index == state.curIndex
+                                  ? 0
+                                  : screenSize.width * .029,
+                              right: screenSize.width * .0422,
+                              left: screenSize.width * .0422,
+                            ),
+                            width: screenSize.width * .128,
+                            height: index == state.curIndex
+                                ? screenSize.width * .005
+                                : 0,
+                            decoration: BoxDecoration(
+                              color: ColorsConfig.textColor2,
+                              borderRadius: BorderRadius.vertical(
+                                bottom: Radius.circular(10),
+                              ),
                             ),
                           ),
-                        ),
-                        Icon(
-                          value["icon"],
-                          size: screenSize.width * .076,
-                          color: index == state.curIndex
-                              ? ColorsConfig.textColor2
-                              : ColorsConfig.color4,
-                        ),
-                        SizedBox(height: screenSize.width * .03),
-                      ],
+                          Icon(
+                            value["icon"],
+                            size: screenSize.width * .076,
+                            color: index == state.curIndex
+                                ? ColorsConfig.textColor2
+                                : ColorsConfig.color4,
+                          ),
+                          SizedBox(height: screenSize.width * .03),
+                        ],
+                      ),
                     ),
-                  ),
-                );
-              }).toList(),
-            )
-
-            // ListView.builder(
-            //   itemCount: widget.pages.length,
-            //   padding:
-            //       EdgeInsets.symmetric(horizontal: screenSize.width * .024),
-            //   scrollDirection: Axis.horizontal,
-            //   itemBuilder: (context, index) =>
-
-            // )
-            // BottomNavigationBar(
-            //   currentIndex: selectedIndex,
-            //   onTap: onItemTapped,
-            //   backgroundColor: ColorsConfig.bgColor1,
-            //   elevation: 0, // Remove default shadow
-            //   selectedItemColor: ColorsConfig.textColor2,
-            //   unselectedItemColor: ColorsConfig.textColor1,
-            //   unselectedLabelStyle: TextStyle(
-            //     color: ColorsConfig.textColor1,
-            //     fontFamily: GoogleFonts.inter().fontFamily,
-            //     fontSize: 12,
-            //     fontWeight: FontWeight.w400,
-            //   ),
-            //   selectedLabelStyle: TextStyle(
-            //     color: ColorsConfig.textColor2,
-            //     fontFamily: GoogleFonts.inter().fontFamily,
-            //     fontSize: 12,
-            //     fontWeight: FontWeight.w400,
-            //   ),
-            //   items: pages,
-            ),
+                  );
+                }).toList(),
+              )),
+        ),
       ),
     );
-    // )
-    // ]);
-    // );
   }
 }

@@ -2,6 +2,7 @@ import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
+import 'package:expense_manager/core/widgets/unscrollable_card.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/daily_summary_graph_viewmodel/daily_summary_graph_viewmodel.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -39,12 +40,13 @@ class BarChartSample5 extends StatefulWidget {
   final BigInt currentWeekTotalAmount;
   final double maxY;
 
-  const BarChartSample5(
-      {required this.dataValues,
-      required this.maxY,
-      required this.xAxisLabels,
-      required this.currentWeekTotalAmount,
-      super.key});
+  const BarChartSample5({
+    required this.dataValues,
+    required this.maxY,
+    required this.xAxisLabels,
+    required this.currentWeekTotalAmount,
+    super.key,
+  });
 
   @override
   State<StatefulWidget> createState() => _BarChartSample5State();
@@ -185,13 +187,24 @@ class _BarChartSample5State extends State<BarChartSample5> {
   bool isShadowBar(int rodIndex) => rodIndex == 1;
 
   double getYAxisInterval() {
-    if (widget.maxY > 2000) {
+    final interval = widget.maxY / 4;
+
+    if (interval == 0) {
       return 1000;
-    } else if (widget.maxY > 1000) {
-      return 500;
-    } else {
-      return 200;
     }
+
+    return interval;
+    // if (widget.maxY > 10000) {
+    //   return 10000;
+    // } else if (widget.maxY > 5000) {
+    //   return 5000;
+    // } else if (widget.maxY > 2000) {
+    //   return 1000;
+    // } else if (widget.maxY > 1000) {
+    //   return 500;
+    // } else {
+    //   return 200;
+    // }
   }
 
   @override
@@ -364,83 +377,43 @@ class ExpensesWeeklySummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      decoration: BoxDecoration(
-        color: ColorsConfig.bgColor2,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: ColorsConfig.color5,
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: ColorsConfig.bgShadowColor1,
-            offset: Offset(0, 4),
-            blurRadius: 5,
-            spreadRadius: 0,
-          ),
-        ],
-      ),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: 200,
-          minWidth: double.infinity,
-        ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ref.watch(dailySummaryGraphViewModelProvider).when(
-                    data: (data) {
-                      if (data == null) {
-                        return SkeletonLoader();
-                      }
-                      Map<int, List<double>> dataValues = {};
-                      Map<int, String> xAxisLables = {};
-                      double maxAmount = 0;
-                      data.dateRange.asMap().entries.forEach(
-                        (element) {
-                          final perDayDbValue = data
-                              .dailySummarizedTransactionsMap[element.key]
-                              ?.totalAmount;
-                          double barValue =
-                              TransactionHelpers.getAmountFromDbAmount('0');
-                          if (perDayDbValue != null) {
-                            barValue = TransactionHelpers.getAmountFromDbAmount(
-                                perDayDbValue.toString());
-                          }
-                          if (barValue > maxAmount) {
-                            maxAmount = barValue;
-                          }
-                          dataValues[element.key] = [barValue];
-                          xAxisLables[element.key] =
-                              DateFormat('EEE').format(element.value);
-                        },
-                      );
-                      return BarChartSample5(
-                        dataValues: dataValues,
-                        currentWeekTotalAmount: data.totalSummarizedAmount,
-                        maxY: maxAmount,
-                        xAxisLabels: xAxisLables,
-                      );
-                    },
-                    error: (error, stackTrace) {
-                      print(error);
-                      print(stackTrace);
-                      return Text(
-                        'Error loading data',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      );
-                    },
-                    loading: () => SkeletonLoader(
-                      width: double.infinity,
-                      height: 120,
-                    ),
-                  )
-            ],
-          ),
-        ),
+    final val = ref.watch(dailySummaryGraphViewModelProvider).whenData(
+      (value) {
+        if (value == null) {
+          return SkeletonLoader();
+        }
+        Map<int, List<double>> dataValues = {};
+        Map<int, String> xAxisLables = {};
+        double maxAmount = 0;
+        value.dateRange.asMap().entries.forEach(
+          (element) {
+            final perDayDbValue =
+                value.dailySummarizedTransactionsMap[element.key]?.totalAmount;
+            double barValue = TransactionHelpers.getAmountFromDbAmount('0');
+            if (perDayDbValue != null) {
+              barValue = TransactionHelpers.getAmountFromDbAmount(
+                  perDayDbValue.toString());
+            }
+            if (barValue > maxAmount) {
+              maxAmount = barValue;
+            }
+            dataValues[element.key] = [barValue];
+            xAxisLables[element.key] = DateFormat('EEE').format(element.value);
+          },
+        );
+        return BarChartSample5(
+          dataValues: dataValues,
+          currentWeekTotalAmount: value.totalSummarizedAmount,
+          maxY: maxAmount,
+          xAxisLabels: xAxisLables,
+        );
+      },
+    );
+
+    return UnscrollableCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [val.value ?? SizedBox.shrink()],
       ),
     );
   }

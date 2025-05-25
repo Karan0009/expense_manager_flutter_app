@@ -10,14 +10,16 @@ class UserTransaction {
   final String recipientName;
   final int subCatId;
   final DateTime? transactionDatetime;
-  final SubCategory subCategory;
+  final SubCategory? subCategory;
+  final int? id;
   UserTransaction({
     required this.userId,
     required this.amount,
     required this.recipientName,
     required this.subCatId,
     required this.transactionDatetime,
-    required this.subCategory,
+    this.subCategory,
+    this.id,
   });
 
   UserTransaction copyWith({
@@ -27,6 +29,7 @@ class UserTransaction {
     int? subCatId,
     DateTime? transactionDatetime,
     SubCategory? subCategory,
+    int? id,
   }) {
     return UserTransaction(
       userId: userId ?? this.userId,
@@ -35,6 +38,7 @@ class UserTransaction {
       subCatId: subCatId ?? this.subCatId,
       transactionDatetime: transactionDatetime ?? this.transactionDatetime,
       subCategory: subCategory ?? this.subCategory,
+      id: id ?? this.id,
     );
   }
 
@@ -45,21 +49,25 @@ class UserTransaction {
       'recipientName': recipientName,
       'subCatId': subCatId,
       'transactionDatetime': transactionDatetime,
-      'subCategory': subCategory.toMap(),
+      'subCategory': subCategory?.toMap(),
+      'id': id,
     };
   }
 
   factory UserTransaction.fromMap(Map<String, dynamic> map) {
     final transactionDatetime = DateTime.tryParse(map['transaction_datetime']);
     final subCatId = AppUtils.safeParseInt(map['sub_cat_id']);
+    final transactionId = AppUtils.safeParseInt(map['id']);
     return UserTransaction(
+      id: transactionId,
       userId: map['user_id'] as String,
       amount: map['amount'] as String,
       recipientName: map['recipient_name'] as String,
       subCatId: subCatId ?? 0,
       transactionDatetime: transactionDatetime,
-      subCategory:
-          SubCategory.fromMap(map['sub_category'] as Map<String, dynamic>),
+      subCategory: map['sub_category'] != null
+          ? SubCategory.fromMap(map['sub_category'] as Map<String, dynamic>)
+          : null,
     );
   }
 
@@ -70,14 +78,15 @@ class UserTransaction {
 
   @override
   String toString() {
-    return 'UserTransaction(userId: $userId, amount: $amount, recipientName: $recipientName, subCatId: $subCatId, transactionDatetime: $transactionDatetime, subCategory: $subCategory)';
+    return 'UserTransaction(id: $id, userId: $userId, amount: $amount, recipientName: $recipientName, subCatId: $subCatId, transactionDatetime: $transactionDatetime, subCategory: $subCategory)';
   }
 
   @override
   bool operator ==(covariant UserTransaction other) {
     if (identical(this, other)) return true;
 
-    return other.userId == userId &&
+    return other.id == id &&
+        other.userId == userId &&
         other.amount == amount &&
         other.recipientName == recipientName &&
         other.subCatId == subCatId &&
@@ -87,7 +96,8 @@ class UserTransaction {
 
   @override
   int get hashCode {
-    return userId.hashCode ^
+    return id.hashCode ^
+        userId.hashCode ^
         amount.hashCode ^
         recipientName.hashCode ^
         subCatId.hashCode ^

@@ -1,12 +1,29 @@
+import 'dart:developer';
+
 import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/core/widgets/custom_input_field.dart';
+import 'package:expense_manager/core/widgets/skeleton_loader.dart';
+import 'package:expense_manager/data/models/category/main_category.dart';
+import 'package:expense_manager/data/models/category/sub_category.dart';
+import 'package:expense_manager/data/models/transactions/user_transaction.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/daily_summary_graph_card.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/expenses_summary_card.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/dashboard_uncategorized_transactions_list.dart';
+import 'package:expense_manager/features/dashboard/view/widgets/main_cat_list_view_with_search.dart';
+import 'package:expense_manager/features/dashboard/view/widgets/sub_cat_list_view_with_search.dart';
+import 'package:expense_manager/features/dashboard/viewmodel/add_expense_viewmodel/add_expense_viewmodel.dart';
+import 'package:expense_manager/features/dashboard/viewmodel/daily_summary_graph_viewmodel/daily_summary_graph_viewmodel.dart';
+import 'package:expense_manager/features/dashboard/viewmodel/dashboard_sub_category_list_viewmodel/dashboard_sub_category_list_viewmodel.dart';
+import 'package:expense_manager/features/dashboard/viewmodel/dashboard_uncategorized_transactions_list_viewmodel/dashboard_uncategorized_transactions_list_viewmodel.dart';
+
+import 'package:expense_manager/features/dashboard/viewmodel/monthly_summary_viewmodel/monthly_summary_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:pinput/pinput.dart';
 
 class WithTransactionsDashboardView extends ConsumerStatefulWidget {
   const WithTransactionsDashboardView({super.key});
@@ -21,6 +38,786 @@ class _WithTransactionsDashboardViewState
   final expenseTitleController = TextEditingController();
   final expenseAmountController = TextEditingController();
   final searchSubCategoryController = TextEditingController();
+  final searchCategoryController = TextEditingController();
+
+  final newSubCatNameController = TextEditingController();
+  final newSubCatDescController = TextEditingController();
+
+  SubCategory? selectedSubCat;
+  MainCategory? selectedCat;
+
+  bool showAddExpenseLoading = false;
+
+  @override
+  void dispose() {
+    expenseTitleController.dispose();
+    expenseAmountController.dispose();
+    searchSubCategoryController.dispose();
+    newSubCatNameController.dispose();
+    newSubCatDescController.dispose();
+    searchCategoryController.dispose();
+    super.dispose();
+  }
+
+  Future<Map<String, dynamic>?> _showEditExpenseBottomSheet(
+    String buttonLabel,
+    UserTransaction? transaction,
+  ) async {
+    if (transaction == null) {
+      return null;
+    }
+    expenseAmountController.setText(
+      TransactionHelpers.getAmountFromDbAmount(transaction.amount).toString(),
+    );
+    expenseTitleController.setText(
+      transaction.recipientName,
+    );
+    setState(() {
+      selectedSubCat = transaction.subCategory;
+    });
+    final result = await showModalBottomSheet<Map<String, dynamic>?>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      // constraints: BoxConstraints(maxHeight: 300),
+      enableDrag: true,
+      showDragHandle: false,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter state) {
+          return Consumer(
+            builder: (context, ref, _) {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor1.withValues(alpha: 0.9),
+                          border: Border(
+                            top: BorderSide(
+                              color: ColorsConfig.color4,
+                              width: 1,
+                            ),
+                          ),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          // mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Text(
+                            //   "Add Expense",
+                            //   style: Theme.of(context).textTheme.headlineSmall,
+                            // ),
+                            SizedBox(height: 12),
+                            CustomInputField(
+                              enabled: !showAddExpenseLoading,
+                              hintText: 'Amount',
+                              controller: expenseAmountController,
+                              keyboardType: TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              autoFocus: true,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.currency_rupee,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            CustomInputField(
+                              enabled: !showAddExpenseLoading,
+                              hintText: 'Title',
+                              controller: expenseTitleController,
+                              maxLength: 300,
+                              keyboardType: TextInputType.text,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.abc,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: showAddExpenseLoading
+                                  ? null
+                                  : () async {
+                                      final val = await Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) =>
+                                            SubCatListViewWithSearch(
+                                          createButtonOnTap: () async {
+                                            final res =
+                                                await _showCreateSubCatBottomSheet();
+                                            if (res != null) {
+                                              ref
+                                                  .read(
+                                                      dashboardSubCategoryListViewModelProvider
+                                                          .notifier)
+                                                  .addSubCategoryToList(res);
+                                            }
+                                          },
+                                          createButtonText: 'Create Category',
+                                          showCreateButton: true,
+                                          searchHintText: 'Search Category',
+                                        ),
+                                        fullscreenDialog: true,
+                                      ));
+                                      if (val != null) {
+                                        state(() {
+                                          selectedSubCat = val;
+                                        });
+
+                                        setState(() {
+                                          selectedSubCat = val;
+                                        });
+                                      }
+                                    },
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: ColorsConfig.bgColor2,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      selectedSubCat == null
+                                          ? "Add Category"
+                                          : selectedSubCat!.name,
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    Icon(
+                                      Icons.playlist_add_rounded,
+                                      color: ColorsConfig.textColor4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 30),
+                            CustomButton(
+                              isDisabled: false,
+                              buttonText: buttonLabel,
+                              isLoading: showAddExpenseLoading,
+                              onPressed: () async {
+                                state(() {
+                                  showAddExpenseLoading = true;
+                                });
+
+                                if (transaction.id == null) {
+                                  // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
+                                  return;
+                                }
+
+                                final result = await ref
+                                    .read(addExpenseViewModelProvider.notifier)
+                                    .edit(
+                                      transaction.id!,
+                                      expenseAmountController.text,
+                                      expenseTitleController.text,
+                                      selectedSubCat,
+                                      transaction.transactionDatetime,
+                                    );
+
+                                state(() {
+                                  showAddExpenseLoading = false;
+                                });
+                                // todo: hide loading
+
+                                result.fold((error) {
+                                  log(error.message);
+                                  // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
+                                  // some error occured
+                                }, (data) {
+                                  Navigator.of(context).pop({
+                                    'action': 'edit',
+                                    'statusCode': '0',
+                                    'data': data.userTransaction.copyWith(
+                                      subCategory: selectedSubCat,
+                                    )
+                                  });
+                                  // TODO: DO SOMETHING TO SHOW TRANSACTION ADDED
+                                });
+                                // ref.read()
+                              },
+                            ),
+                            SizedBox(height: 10),
+                            CustomButton(
+                              isDisabled: false,
+                              buttonText: 'Delete Transaction',
+                              isLoading: false,
+                              style: Theme.of(context)
+                                  .elevatedButtonTheme
+                                  .style!
+                                  .copyWith(
+                                      backgroundColor:
+                                          WidgetStateColor.resolveWith(
+                                    (_) => ColorsConfig.color8,
+                                  )),
+                              onLongPressed: () async {
+                                if (transaction.id == null) {
+                                  // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
+                                  return;
+                                }
+
+                                final result = await ref
+                                    .read(addExpenseViewModelProvider.notifier)
+                                    .delete(transaction.id!);
+
+                                result.fold((error) {
+                                  log(error.message);
+                                  // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
+                                  // some error occured
+                                }, (data) {
+                                  Navigator.of(context).pop({
+                                    'action': 'delete',
+                                    'statusCode': '0',
+                                    'data': transaction.id,
+                                  });
+                                  // TODO: DO SOMETHING TO SHOW TRANSACTION deleted
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Backdrop with Close Button
+                  Positioned(
+                    top: -50,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 35,
+                        height: 35,
+                        padding: EdgeInsets.all(0),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor2,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        });
+      },
+    );
+
+    _resetAddTransactionFormBottomSheet();
+
+    if (result == null) {
+      return result;
+    }
+
+    switch (result['action']) {
+      case 'edit':
+        await ref
+            .read(dashboardUncategorizedTransactionsListViewModelProvider
+                .notifier)
+            .editTransaction(result['data']);
+
+        await ref
+            .read(monthlySummaryViewModelProvider.notifier)
+            .editTransaction(result['data'], transaction);
+
+        await ref
+            .read(dailySummaryGraphViewModelProvider.notifier)
+            .editTransaction(result['data'], transaction);
+
+        break;
+      case 'delete':
+        await ref
+            .read(dashboardUncategorizedTransactionsListViewModelProvider
+                .notifier)
+            .removeTransaction(result['data']);
+
+        await ref
+            .read(monthlySummaryViewModelProvider.notifier)
+            .removeTransaction(transaction);
+
+        await ref
+            .read(dailySummaryGraphViewModelProvider.notifier)
+            .removeTransaction(transaction);
+        break;
+      default:
+      // TODO: DO SOMETHING TO TELL SOME ERROR OCCURED
+    }
+
+    return result;
+  }
+
+  Future<UserTransaction?> _showAddExpenseBottomSheet(
+    String buttonLabel,
+  ) async {
+    final result = await showModalBottomSheet<UserTransaction?>(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      useSafeArea: true,
+      // constraints: BoxConstraints(maxHeight: 300),
+      enableDrag: true,
+      showDragHandle: false,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(
+            builder: (BuildContext context, StateSetter state) {
+          return Consumer(
+            builder: (context, ref, _) {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor1.withValues(alpha: 0.9),
+                          border: Border(
+                            top: BorderSide(
+                              color: ColorsConfig.color4,
+                              width: 1,
+                            ),
+                          ),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          // mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Text(
+                            //   "Add Expense",
+                            //   style: Theme.of(context).textTheme.headlineSmall,
+                            // ),
+                            SizedBox(height: 12),
+                            CustomInputField(
+                              enabled: !showAddExpenseLoading,
+                              hintText: 'Amount',
+                              controller: expenseAmountController,
+                              keyboardType: TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                              autoFocus: true,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.currency_rupee,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            CustomInputField(
+                              enabled: !showAddExpenseLoading,
+                              hintText: 'Title',
+                              controller: expenseTitleController,
+                              maxLength: 300,
+                              keyboardType: TextInputType.text,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.abc,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: showAddExpenseLoading
+                                  ? null
+                                  : () async {
+                                      final val = await Navigator.of(context)
+                                          .push(MaterialPageRoute(
+                                        builder: (context) =>
+                                            SubCatListViewWithSearch(
+                                          createButtonOnTap: () async {
+                                            final res =
+                                                await _showCreateSubCatBottomSheet();
+                                            if (res != null) {
+                                              ref
+                                                  .read(
+                                                      dashboardSubCategoryListViewModelProvider
+                                                          .notifier)
+                                                  .addSubCategoryToList(res);
+                                            }
+                                          },
+                                          createButtonText: 'Create Category',
+                                          showCreateButton: true,
+                                          searchHintText: 'Search Category',
+                                        ),
+                                        fullscreenDialog: true,
+                                      ));
+                                      if (val != null) {
+                                        state(() {
+                                          selectedSubCat = val;
+                                        });
+
+                                        setState(() {
+                                          selectedSubCat = val;
+                                        });
+                                      }
+                                    },
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: ColorsConfig.bgColor2,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      selectedSubCat == null
+                                          ? "Add Category"
+                                          : selectedSubCat!.name,
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    Icon(
+                                      Icons.playlist_add_rounded,
+                                      color: ColorsConfig.textColor4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 30),
+                            CustomButton(
+                              isDisabled: false,
+                              buttonText: buttonLabel,
+                              isLoading: showAddExpenseLoading,
+                              onPressed: () async {
+                                state(() {
+                                  showAddExpenseLoading = true;
+                                });
+
+                                final result = await ref
+                                    .read(addExpenseViewModelProvider.notifier)
+                                    .create(
+                                      expenseAmountController.text,
+                                      expenseTitleController.text,
+                                      selectedSubCat,
+                                      DateTime.now(),
+                                    );
+
+                                state(() {
+                                  showAddExpenseLoading = false;
+                                });
+                                // todo: hide loading
+
+                                result.fold((error) {
+                                  log(error.message);
+                                  // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
+                                  // some error occured
+                                }, (data) {
+                                  Navigator.of(context)
+                                      .pop(data.userTransaction.copyWith(
+                                    subCategory: selectedSubCat,
+                                  ));
+                                  // TODO: DO SOMETHING TO SHOW TRANSACTION ADDED
+                                });
+                                // ref.read()
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Backdrop with Close Button
+                  Positioned(
+                    top: -50,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 35,
+                        height: 35,
+                        padding: EdgeInsets.all(0),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor2,
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          size: 20,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        });
+      },
+    );
+
+    _resetAddTransactionFormBottomSheet();
+
+    return result;
+  }
+
+  void _resetAddTransactionFormBottomSheet() {
+    expenseAmountController.clear();
+    expenseTitleController.clear();
+    searchSubCategoryController.clear();
+    setState(() {
+      selectedSubCat = null;
+    });
+  }
+
+  void _resetCreateCategoryFormBottomSheet() {
+    newSubCatNameController.clear();
+    newSubCatDescController.clear();
+    setState(() {
+      selectedCat = null;
+    });
+  }
+
+  Future<SubCategory?> _showCreateSubCatBottomSheet() async {
+    final result = await showModalBottomSheet(
+      context: context,
+      useRootNavigator: true,
+      isScrollControlled: true,
+      isDismissible: true,
+      useSafeArea: true,
+      // constraints: BoxConstraints(maxHeight: 300),
+      enableDrag: true,
+      showDragHandle: false,
+      barrierColor: Colors.black.withValues(alpha: 0.7),
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, state) {
+          return Consumer(
+            builder: (ctx, ref, _) {
+              return Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  SingleChildScrollView(
+                    child: Padding(
+                      padding: EdgeInsets.only(
+                        bottom: MediaQuery.of(context).viewInsets.bottom,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor1.withValues(alpha: 0.9),
+                          border: Border(
+                            top: BorderSide(
+                              color: ColorsConfig.color4,
+                              width: 1,
+                            ),
+                          ),
+                          borderRadius:
+                              BorderRadius.vertical(top: Radius.circular(16)),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            CustomInputField(
+                              hintText: 'Name',
+                              controller: newSubCatNameController,
+                              keyboardType: TextInputType.text,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.title,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            CustomInputField(
+                              hintText: 'Description',
+                              controller: newSubCatDescController,
+                              maxLength: 300,
+                              keyboardType: TextInputType.text,
+                              prefixIcon: Icon(
+                                size: 30,
+                                Icons.description,
+                                color: Colors.white,
+                              ),
+                              textStyle: Theme.of(context).textTheme.bodyLarge,
+                            ),
+                            SizedBox(height: 12),
+                            GestureDetector(
+                              onTap: () async {
+                                final val = await Navigator.of(ctx)
+                                    .push(MaterialPageRoute(
+                                  builder: (context) =>
+                                      MainCatListViewWithSearch(
+                                    showCreateButton: false,
+                                    createButtonOnTap: () {},
+                                    createButtonText: '',
+                                    searchHintText: 'Search Category',
+                                  ),
+                                  fullscreenDialog: true,
+                                ));
+
+                                if (val != null) {
+                                  state(() {
+                                    selectedCat = val;
+                                  });
+
+                                  setState(() {
+                                    selectedCat = val;
+                                  });
+                                }
+                              },
+                              child: Container(
+                                width: double.infinity,
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10, vertical: 5),
+                                decoration: BoxDecoration(
+                                  color: ColorsConfig.bgColor2,
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      selectedCat == null
+                                          ? "Add Main Category"
+                                          : selectedCat!.name,
+                                      style:
+                                          Theme.of(context).textTheme.bodyLarge,
+                                    ),
+                                    Icon(
+                                      Icons.playlist_add_rounded,
+                                      color: ColorsConfig.textColor4,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 30),
+                            CustomButton(
+                              isDisabled: false,
+                              buttonText: 'Create',
+                              isLoading: false,
+                              onPressed: () async {
+                                if (newSubCatDescController.text.isEmpty ||
+                                    newSubCatNameController.text.isEmpty ||
+                                    selectedCat == null) {
+                                  return;
+                                }
+                                final res = await ref
+                                    .read(
+                                        dashboardSubCategoryListViewModelProvider
+                                            .notifier)
+                                    .create(
+                                      categoryId: selectedCat!.id,
+                                      description: newSubCatDescController.text,
+                                      name: newSubCatNameController.text,
+                                    );
+
+                                res.fold((error) {
+                                  // AppUtils.showSnackBar(
+                                  //   context,
+                                  //   error.message,
+                                  // );
+                                }, (subCat) {
+                                  Navigator.of(context).pop(subCat);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  // Backdrop with Close Button
+                  Positioned(
+                    top: -50,
+                    left: 0,
+                    right: 0,
+                    child: Center(
+                      child: Container(
+                        width: 35,
+                        height: 35,
+                        padding: EdgeInsets.all(0),
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor2,
+                          borderRadius: BorderRadius.circular(
+                            30,
+                          ),
+                        ),
+                        child: IconButton(
+                          icon:
+                              Icon(Icons.close, size: 20, color: Colors.white),
+                          onPressed: () => Navigator.of(context).pop(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          );
+        });
+      },
+    );
+
+    _resetCreateCategoryFormBottomSheet();
+
+    return result;
+  }
+
+  Widget cardLoader(BuildContext context) {
+    return SkeletonLoader(
+      width: double.infinity,
+      height: 220,
+      baseColor: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(16),
+      highlightColor: Theme.of(context).cardColor.withValues(
+            alpha: 2.5,
+          ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
@@ -41,7 +838,27 @@ class _WithTransactionsDashboardViewState
             ),
           ),
           SliverToBoxAdapter(
-            child: ExpensesSummaryCard(),
+            child: ref.watch(monthlySummaryViewModelProvider).when(
+                  data: (data) {
+                    return ExpensesSummaryCard();
+                  },
+                  error: (error, stackTrace) => FittedBox(
+                    child: Text(
+                      "Err",
+                      textHeightBehavior: TextHeightBehavior(
+                        applyHeightToFirstAscent: false,
+                        applyHeightToLastDescent: false,
+                      ),
+                      style: TextStyle(
+                        fontSize: 29,
+                        color: ColorsConfig.textColor4,
+                        fontFamily: GoogleFonts.inter().fontFamily,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+                  loading: () => cardLoader(context),
+                ),
           ),
           SliverToBoxAdapter(
             child: const SizedBox(
@@ -49,14 +866,23 @@ class _WithTransactionsDashboardViewState
             ),
           ),
           SliverToBoxAdapter(
-            child: DailySummaryGraphCard(),
+            child: ref.watch(dailySummaryGraphViewModelProvider).when(
+                  data: (data) => DailySummaryGraphCard(),
+                  error: (error, _) => Text(
+                    'Error loading data',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  loading: () => cardLoader(context),
+                ),
           ),
           SliverToBoxAdapter(
             child: const SizedBox(
               height: 10,
             ),
           ),
-          DashboardUncategorizedTransactionsList(),
+          DashboardUncategorizedTransactionsList(
+            showTransactionDetailsBottomSheet: _showEditExpenseBottomSheet,
+          ),
           SliverToBoxAdapter(
             child: SizedBox(
               height: AppUtils.getNavbarHeight(context) * 2,
@@ -68,19 +894,31 @@ class _WithTransactionsDashboardViewState
         bottom: AppUtils.getNavbarHeight(context) + 10,
         left: (MediaQuery.of(context).size.width / 2) - 100,
         child: CustomButton(
-          onPressed: () {
-            _showAddExpenseBottomSheet(
-              context,
+          onPressed: () async {
+            final newTransaction = await _showAddExpenseBottomSheet(
               'Add Expense',
-              expenseAmountController,
-              expenseTitleController,
-              searchSubCategoryController,
             );
+
+            if (newTransaction != null) {
+              await ref
+                  .read(dashboardUncategorizedTransactionsListViewModelProvider
+                      .notifier)
+                  .addNewTransaction(newTransaction);
+
+              await ref
+                  .read(monthlySummaryViewModelProvider.notifier)
+                  .addNewTransaction(newTransaction);
+
+              await ref
+                  .read(dailySummaryGraphViewModelProvider.notifier)
+                  .addNewTransaction(newTransaction);
+            }
+            print(newTransaction);
           },
           isLoading: false,
           buttonText: 'Add Expense',
           prefixIcon: Icon(Icons.add_rounded),
-          containerHeight: 30,
+          containerHeight: 50,
           containerWidth: 162,
           style: ElevatedButton.styleFrom(
             padding: EdgeInsets.all(0),
@@ -104,284 +942,4 @@ class _WithTransactionsDashboardViewState
       ),
     ]);
   }
-}
-
-void _showAddExpenseBottomSheet(
-  BuildContext context,
-  String buttonLabel,
-  TextEditingController? expenseAmountController,
-  TextEditingController? expenseTitleController,
-  TextEditingController? searchSubCategoryController,
-) {
-  showModalBottomSheet(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    isDismissible: true,
-    useSafeArea: true,
-    constraints: BoxConstraints(maxHeight: 300),
-    enableDrag: true,
-    showDragHandle: false,
-    barrierColor: Colors.black.withValues(alpha: 0.7), // Darkens backdrop
-    backgroundColor: Colors.transparent, // Make modal container transparent
-    builder: (context) {
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: ColorsConfig.bgColor1.withValues(alpha: 0.9),
-              border: Border(
-                top: BorderSide(
-                  color: ColorsConfig.color4,
-                  width: 1,
-                ),
-              ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              // mainAxisSize: MainAxisSize.min,
-              children: [
-                // Text(
-                //   "Add Expense",
-                //   style: Theme.of(context).textTheme.headlineSmall,
-                // ),
-                SizedBox(height: 12),
-                CustomInputField(
-                  hintText: 'Amount',
-                  controller: expenseAmountController,
-                  keyboardType: TextInputType.number,
-                  prefixIcon: Center(
-                    heightFactor: 0.5,
-                    widthFactor: 0,
-                    child: Container(
-                      height: 25,
-                      width: 25,
-                      padding: EdgeInsets.all(0),
-                      margin: EdgeInsets.only(bottom: 7),
-                      decoration: BoxDecoration(
-                        color: ColorsConfig.color1,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Icon(
-                        size: 15,
-                        Icons.currency_rupee,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12),
-                CustomInputField(
-                  hintText: 'Title',
-                  controller: expenseTitleController,
-                  maxLength: 300,
-                  keyboardType: TextInputType.text,
-                  prefixIcon: Center(
-                    heightFactor: 0.5,
-                    widthFactor: 0,
-                    child: Container(
-                      height: 25,
-                      width: 25,
-                      padding: EdgeInsets.all(0),
-                      margin: EdgeInsets.only(bottom: 7),
-                      decoration: BoxDecoration(
-                        color: ColorsConfig.color1,
-                        borderRadius: BorderRadius.circular(100),
-                      ),
-                      child: Icon(
-                        size: 15,
-                        Icons.phone_rounded,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                SizedBox(height: 12),
-                GestureDetector(
-                  onTap: () {
-                    _showSelectCategoryBottomSheet(
-                      context,
-                      searchSubCategoryController,
-                    );
-                  },
-                  child: Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    decoration: BoxDecoration(
-                      color: ColorsConfig.bgColor2,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Text(
-                          "Add Category",
-                          style: Theme.of(context).textTheme.bodyLarge,
-                        ),
-                        Icon(
-                          Icons.playlist_add_rounded,
-                          color: ColorsConfig.textColor4,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                SizedBox(height: 30),
-                CustomButton(
-                  isDisabled: true,
-                  buttonText: buttonLabel,
-                  isLoading: false,
-                  onPressed: () async {
-                    //   final isError = ref
-                    //       .read(authViewModelProvider.notifier)
-                    //       .validateAuthForm(phoneController.text,
-                    //           isTermsAndConditionsAccepted);
-                    //   if (isError != null) {
-                    //     AppUtils.showSnackBar(context, isError);
-                    //     return;
-                    //   }
-
-                    //   final result = await ref
-                    //       .read(authViewModelProvider.notifier)
-                    //       .getOtp(
-                    //         phoneController.text,
-                    //         isTermsAndConditionsAccepted,
-                    //       );
-
-                    //   result.fold((l) {
-                    //     AppUtils.showSnackBar(
-                    //         context, 'Some error occured');
-                    //   }, (otp) {
-                    //     context
-                    //         .pushReplacement(EnterOtpPageView.routePath);
-                    //   });
-                  },
-                ),
-              ],
-            ),
-          ),
-          // Backdrop with Close Button
-          Positioned(
-            top: -50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 35,
-                height: 35,
-                padding: EdgeInsets.all(0),
-                decoration: BoxDecoration(
-                  color: ColorsConfig.bgColor2,
-                  borderRadius: BorderRadius.circular(
-                    30,
-                  ),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.close, size: 20, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
-}
-
-void _showSelectCategoryBottomSheet(
-  BuildContext context,
-  TextEditingController? searchSubCategoryController,
-) {
-  showModalBottomSheet(
-    context: context,
-    useRootNavigator: true,
-    isScrollControlled: true,
-    isDismissible: true,
-    useSafeArea: true,
-    enableDrag: true,
-    showDragHandle: false,
-    constraints: BoxConstraints(
-      maxHeight: MediaQuery.of(context).size.height * 0.9,
-    ),
-    barrierColor: Colors.black.withValues(alpha: 0.7), // Darkens backdrop
-    backgroundColor: Colors.transparent, // Make modal container transparent
-    builder: (context) {
-      return Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: double.infinity,
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: ColorsConfig.bgColor1.withValues(alpha: 0.9),
-              border: Border(
-                top: BorderSide(
-                  color: ColorsConfig.color4,
-                  width: 1,
-                ),
-              ),
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              // mainAxisSize: MainAxisSize.min,
-              children: [
-                // Text(
-                //   "Add Expense",
-                //   style: Theme.of(context).textTheme.headlineSmall,
-                // ),
-                SizedBox(height: 12),
-                CustomInputField(
-                  hintText: 'Search Category',
-                  controller: searchSubCategoryController,
-                  keyboardType: TextInputType.text,
-                  prefixIcon: Icon(
-                    size: 25,
-                    Icons.search,
-                    color: ColorsConfig.color2,
-                  ),
-                ),
-                SizedBox(height: 30),
-                CustomButton(
-                  isDisabled: true,
-                  buttonText: 'Create Category',
-                  isLoading: false,
-                  onPressed: () async {},
-                ),
-              ],
-            ),
-          ),
-          // Backdrop with Close Button
-          Positioned(
-            top: -50,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                width: 35,
-                height: 35,
-                padding: EdgeInsets.all(0),
-                decoration: BoxDecoration(
-                  color: ColorsConfig.bgColor2,
-                  borderRadius: BorderRadius.circular(
-                    30,
-                  ),
-                ),
-                child: IconButton(
-                  icon: Icon(Icons.close, size: 20, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ),
-            ),
-          ),
-        ],
-      );
-    },
-  );
 }

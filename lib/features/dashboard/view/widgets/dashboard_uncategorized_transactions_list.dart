@@ -1,13 +1,19 @@
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/core/widgets/radial_step_counter.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
+import 'package:expense_manager/data/models/transactions/user_transaction.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/dashboard_transaction_card.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/dashboard_uncategorized_transactions_list_viewmodel/dashboard_uncategorized_transactions_list_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DashboardUncategorizedTransactionsList extends ConsumerStatefulWidget {
-  const DashboardUncategorizedTransactionsList({super.key});
+  final Future<Map<String, dynamic>?> Function(String, UserTransaction?)
+      showTransactionDetailsBottomSheet;
+  const DashboardUncategorizedTransactionsList({
+    super.key,
+    required this.showTransactionDetailsBottomSheet,
+  });
 
   @override
   ConsumerState<DashboardUncategorizedTransactionsList> createState() =>
@@ -73,6 +79,11 @@ class _DashboardUncategorizedTransactionsListState
                       loading: () => SkeletonLoader(
                         width: 100,
                         height: 50,
+                        baseColor: Theme.of(context).cardColor,
+                        borderRadius: BorderRadius.circular(16),
+                        highlightColor: Theme.of(context).cardColor.withValues(
+                              alpha: 2.5,
+                            ),
                       ),
                     ),
               ],
@@ -87,6 +98,8 @@ class _DashboardUncategorizedTransactionsListState
                       (context, index) {
                         return DashboardTransactionCard(
                           transaction: data?.uncategorizedTransactions[index],
+                          showTransactionDetailsBottomSheet:
+                              widget.showTransactionDetailsBottomSheet,
                         );
                       },
                       childCount: data?.uncategorizedTransactions.length ?? 0,
@@ -117,14 +130,32 @@ class _DashboardUncategorizedTransactionsListState
                         SkeletonLoader(
                           width: double.infinity,
                           height: 100,
+                          baseColor: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          highlightColor:
+                              Theme.of(context).cardColor.withValues(
+                                    alpha: 2.5,
+                                  ),
                         ),
                         SkeletonLoader(
                           width: double.infinity,
                           height: 100,
+                          baseColor: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          highlightColor:
+                              Theme.of(context).cardColor.withValues(
+                                    alpha: 2.5,
+                                  ),
                         ),
                         SkeletonLoader(
                           width: double.infinity,
                           height: 100,
+                          baseColor: Theme.of(context).cardColor,
+                          borderRadius: BorderRadius.circular(16),
+                          highlightColor:
+                              Theme.of(context).cardColor.withValues(
+                                    alpha: 2.5,
+                                  ),
                         ),
                       ],
                     ),

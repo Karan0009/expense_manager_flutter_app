@@ -90,9 +90,27 @@ class RestClient {
   FutureEither<Response> postRequest(
       {required String url, dynamic body, bool requireAuth = true}) async {
     try {
-      // if (requireAuth && (_authToken ?? '').isEmpty) {
-      //   return Left(HttpFailure(message: FailureMessage.authTokenEmpty));
-      // }
+      if (requireAuth) {
+        final authToken = await _authLocalRepository.getAccessToken();
+
+        authToken.fold(
+          (l) {
+            return Left(HttpFailure(
+              message: FailureMessage.authTokenEmpty,
+              statusCode: 401,
+            ));
+          },
+          (r) {
+            if (r.isEmpty) {
+              return Left(HttpFailure(
+                message: FailureMessage.authTokenEmpty,
+                statusCode: 401,
+              ));
+            }
+            _dio.options.headers["Authorization"] = "Bearer $r";
+          },
+        );
+      }
 
       if (AppConfig.logHttp) {
         log('REQUEST TO : $url', name: LogLabel.httpPost);
@@ -128,12 +146,33 @@ class RestClient {
     }
   }
 
-  FutureEither<Response> putRequest(
-      {required String url, dynamic body, bool requireAuth = true}) async {
+  FutureEither<Response> putRequest({
+    required String url,
+    dynamic body,
+    bool requireAuth = true,
+  }) async {
     try {
-      // if (requireAuth && (_authToken ?? '').isEmpty) {
-      //   return Left(HttpFailure(message: FailureMessage.authTokenEmpty));
-      // }
+      if (requireAuth) {
+        final authToken = await _authLocalRepository.getAccessToken();
+
+        authToken.fold(
+          (l) {
+            return Left(HttpFailure(
+              message: FailureMessage.authTokenEmpty,
+              statusCode: 401,
+            ));
+          },
+          (r) {
+            if (r.isEmpty) {
+              return Left(HttpFailure(
+                message: FailureMessage.authTokenEmpty,
+                statusCode: 401,
+              ));
+            }
+            _dio.options.headers["Authorization"] = "Bearer $r";
+          },
+        );
+      }
 
       if (AppConfig.logHttp) {
         log('REQUEST TO : $url', name: LogLabel.httpPut);
@@ -154,12 +193,33 @@ class RestClient {
     }
   }
 
-  FutureEither<Response> deleteRequest(
-      {required String url, dynamic body, bool requireAuth = true}) async {
+  FutureEither<Response> deleteRequest({
+    required String url,
+    dynamic body,
+    bool requireAuth = true,
+  }) async {
     try {
-      // if (requireAuth && (_authToken ?? '').isEmpty) {
-      //   return Left(HttpFailure(message: FailureMessage.authTokenEmpty));
-      // }
+      if (requireAuth) {
+        final authToken = await _authLocalRepository.getAccessToken();
+
+        authToken.fold(
+          (l) {
+            return Left(HttpFailure(
+              message: FailureMessage.authTokenEmpty,
+              statusCode: 401,
+            ));
+          },
+          (r) {
+            if (r.isEmpty) {
+              return Left(HttpFailure(
+                message: FailureMessage.authTokenEmpty,
+                statusCode: 401,
+              ));
+            }
+            _dio.options.headers["Authorization"] = "Bearer $r";
+          },
+        );
+      }
 
       if (AppConfig.logHttp) {
         log('REQUEST TO : $url', name: LogLabel.httpDelete);

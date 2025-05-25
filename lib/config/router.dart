@@ -1,8 +1,6 @@
-// import 'package:expense_manager/globals/layouts/home_layout.dart';
 import 'package:expense_manager/core/layouts/home_layout.dart';
 import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/enter_otp_page_view.dart';
-// import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
 import 'package:expense_manager/features/splash_screen/view/pages/splash_screen_view.dart';
 // import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
 import 'package:flutter/material.dart';

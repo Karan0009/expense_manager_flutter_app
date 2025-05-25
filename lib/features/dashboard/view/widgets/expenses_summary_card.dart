@@ -1,6 +1,5 @@
 import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/transaction_helpers.dart';
-import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/expenses_carousel.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/monthly_summary_viewmodel/monthly_summary_viewmodel.dart';
 import 'package:flutter/material.dart';
@@ -38,26 +37,21 @@ class ExpensesSummaryCard extends ConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ref.watch(monthlySummaryViewModelProvider).when(
-                    data: (data) => data != null
-                        ? Text(
-                            "SPENT IN ${DateFormat('MMMM').format(DateTime.parse(data.categorySummarizedTransactions[0].summaryStart)).toUpperCase()}",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                    fontWeight: FontWeight.w500, fontSize: 9),
-                          )
-                        : SizedBox.shrink(),
-                    error: (error, _) => Text(
-                      "SPENT IN Err",
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyMedium!
-                          .copyWith(fontWeight: FontWeight.w500, fontSize: 9),
-                    ),
-                    loading: () => SizedBox.shrink(),
-                  ),
+              ref.watch(monthlySummaryViewModelProvider).whenData<Widget>(
+                    (value) {
+                      return value != null
+                          ? Text(
+                              "SPENT IN ${DateFormat('MMMM').format(DateTime.parse(value.categorySummarizedTransactions.isEmpty ? DateTime.now().toString() : value.categorySummarizedTransactions[0].summaryStart)).toUpperCase()}",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium!
+                                  .copyWith(
+                                      fontWeight: FontWeight.w500, fontSize: 9),
+                            )
+                          : SizedBox.shrink();
+                    },
+                  ).value ??
+                  SizedBox.shrink(),
 
               const SizedBox(height: 8),
               Container(
@@ -69,12 +63,14 @@ class ExpensesSummaryCard extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
-                    ref.watch(monthlySummaryViewModelProvider).when(
-                          data: (data) => FittedBox(
+                    ref
+                            .watch(monthlySummaryViewModelProvider)
+                            .whenData((value) {
+                          return FittedBox(
                             child: Text(
-                              data != null
+                              value != null
                                   ? TransactionHelpers.formatStringAmount(
-                                      data.totalSummarizedAmount.toString())
+                                      value.totalSummarizedAmount.toString())
                                   : "₹0.00",
                               textHeightBehavior: TextHeightBehavior(
                                 applyHeightToFirstAscent: false,
@@ -87,27 +83,9 @@ class ExpensesSummaryCard extends ConsumerWidget {
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
-                          ),
-                          error: (error, _) => FittedBox(
-                            child: Text(
-                              "Err",
-                              textHeightBehavior: TextHeightBehavior(
-                                applyHeightToFirstAscent: false,
-                                applyHeightToLastDescent: false,
-                              ),
-                              style: TextStyle(
-                                fontSize: 29,
-                                color: ColorsConfig.textColor4,
-                                fontFamily: GoogleFonts.inter().fontFamily,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          loading: () => SkeletonLoader(
-                            width: 80,
-                            height: 40,
-                          ),
-                        ),
+                          );
+                        }).value ??
+                        SizedBox.shrink(),
 
                     const SizedBox(width: 8),
                     // TODO: UNCOMMENT AFTER ADDING BUDGET THINGS

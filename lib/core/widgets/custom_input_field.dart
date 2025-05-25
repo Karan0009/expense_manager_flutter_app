@@ -12,6 +12,8 @@ class CustomInputField extends StatelessWidget {
   final TextStyle? textStyle;
   final int? maxLength;
   final String? Function(String?)? validator;
+  final bool? autoFocus;
+  final bool? enabled;
   const CustomInputField({
     super.key,
     required this.hintText,
@@ -24,11 +26,14 @@ class CustomInputField extends StatelessWidget {
     this.textStyle,
     this.maxLength,
     this.validator,
+    this.autoFocus,
+    this.enabled,
   });
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
+      enabled: enabled ?? true,
       keyboardType: keyboardType,
       cursorColor: ColorsConfig.textColor2,
       controller: controller,
@@ -37,6 +42,7 @@ class CustomInputField extends StatelessWidget {
       cursorWidth: 1,
       style: textStyle,
       validator: validator,
+      autofocus: autoFocus ?? false,
       decoration: InputDecoration(
         counterText: '',
         prefixIcon: prefixIcon,
