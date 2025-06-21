@@ -32,6 +32,16 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
     );
   }
 
+  FutureVoid refresh() async {
+    state = const AsyncValue.loading();
+    final summary = await getCurrentWeeksDayWiseSummary();
+
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (summary) => state = AsyncValue.data(summary),
+    );
+  }
+
   FutureEither<DashboardDailySummaryGraphState>
       getCurrentWeeksDayWiseSummary() async {
     final curDate = DateTime.now();

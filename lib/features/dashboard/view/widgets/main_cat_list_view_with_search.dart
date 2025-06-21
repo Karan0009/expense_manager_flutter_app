@@ -96,10 +96,9 @@ class _MainCatListViewWithSearchState
                         SizedBox(height: 10),
                         Expanded(
                           child: ListView.builder(
-                            itemCount: data.categories.length * 2,
+                            itemCount: data.categories.length,
                             scrollDirection: Axis.vertical,
                             itemBuilder: (context, index) {
-                              index = index % data.categories.length;
                               return GestureDetector(
                                 onTap: () {
                                   Navigator.of(context)

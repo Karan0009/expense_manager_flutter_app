@@ -13,6 +13,7 @@ class GlassmorphicSnackBar extends SnackBar {
   }) : super(
           behavior: SnackBarBehavior.floating,
           elevation: 0,
+          duration: Duration(seconds: 10),
           margin: margin ??
               const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           content: ClipRRect(

@@ -19,7 +19,7 @@ class DashboardSubCategoryListViewModel
   Future<DashboardSubCategoriesListState?> build() async {
     _subCategoryRemoteRepository =
         ref.watch(subCategoryRemoteRepositoryProvider);
-    final data = await loadSubCategories(state.value?.meta.nextPageNumber ?? 1);
+    final data = await loadSubCategories(state.value?.meta.nextPage ?? 1);
     return data.fold(
       (error) {
         log(error.message);

@@ -7,14 +7,14 @@ class Meta {
   final int totalCount;
   final int? totalPages;
   final int? lastPage;
-  final int? nextPageNumber;
+  final int? nextPage;
   final Map<String, dynamic>? filters;
 
   Meta({
     required this.totalCount,
     this.totalPages,
     this.lastPage,
-    this.nextPageNumber,
+    this.nextPage,
     this.filters,
   });
 
@@ -22,14 +22,14 @@ class Meta {
     int? totalCount,
     int? totalPages,
     int? lastPage,
-    int? nextPageNumber,
+    int? nextPage,
     Map<String, dynamic>? filters,
   }) {
     return Meta(
       totalCount: totalCount ?? this.totalCount,
       totalPages: totalPages ?? this.totalPages,
       lastPage: lastPage ?? this.lastPage,
-      nextPageNumber: nextPageNumber ?? this.nextPageNumber,
+      nextPage: nextPage ?? this.nextPage,
       filters: filters ?? this.filters,
     );
   }
@@ -39,7 +39,7 @@ class Meta {
       'total_count': totalCount,
       'total_pages': totalPages,
       'last_page': lastPage,
-      'next_page_number': nextPageNumber,
+      'next_page': nextPage,
       'filters': filters,
     };
   }
@@ -49,9 +49,7 @@ class Meta {
       totalCount: map['total_count'] as int,
       totalPages: map['total_pages'] != null ? map['total_pages'] as int : null,
       lastPage: map['last_page'] != null ? map['last_page'] as int : null,
-      nextPageNumber: map['next_page_number'] != null
-          ? map['next_page_number'] as int
-          : null,
+      nextPage: map['next_page'] != null ? map['next_page'] as int : null,
       filters: map['filters'] != null
           ? Map<String, dynamic>.from(map['filters'] as Map<String, dynamic>)
           : null,
@@ -65,7 +63,7 @@ class Meta {
 
   @override
   String toString() {
-    return 'Meta(totalCount: $totalCount, totalPages: $totalPages, lastPage: $lastPage, nextPageNumber: $nextPageNumber, filters: $filters)';
+    return 'Meta(totalCount: $totalCount, totalPages: $totalPages, lastPage: $lastPage, nextPage: $nextPage, filters: $filters)';
   }
 
   @override
@@ -75,7 +73,7 @@ class Meta {
     return other.totalCount == totalCount &&
         other.totalPages == totalPages &&
         other.lastPage == lastPage &&
-        other.nextPageNumber == nextPageNumber &&
+        other.nextPage == nextPage &&
         mapEquals(other.filters, filters);
   }
 
@@ -84,7 +82,7 @@ class Meta {
     return totalCount.hashCode ^
         totalPages.hashCode ^
         lastPage.hashCode ^
-        nextPageNumber.hashCode ^
+        nextPage.hashCode ^
         filters.hashCode;
   }
 }

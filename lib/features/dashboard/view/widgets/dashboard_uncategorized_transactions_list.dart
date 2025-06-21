@@ -1,4 +1,4 @@
-import 'package:expense_manager/core/widgets/custom_button.dart';
+import 'package:expense_manager/core/widgets/loader.dart';
 import 'package:expense_manager/core/widgets/radial_step_counter.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/data/models/transactions/user_transaction.dart';
@@ -10,9 +10,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 class DashboardUncategorizedTransactionsList extends ConsumerStatefulWidget {
   final Future<Map<String, dynamic>?> Function(String, UserTransaction?)
       showTransactionDetailsBottomSheet;
+  final bool isLoading;
   const DashboardUncategorizedTransactionsList({
     super.key,
     required this.showTransactionDetailsBottomSheet,
+    this.isLoading = false,
   });
 
   @override
@@ -105,13 +107,19 @@ class _DashboardUncategorizedTransactionsListState
                       childCount: data?.uncategorizedTransactions.length ?? 0,
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: CustomButton(
-                      onPressed: () {},
-                      isLoading: false,
-                      buttonText: 'Load more',
+                  if (widget.isLoading)
+                    SliverToBoxAdapter(
+                      child: SizedBox(
+                        height: 35,
+                        width: 35,
+                        child: Loader(),
+                      ),
                     ),
-                  )
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 30,
+                    ),
+                  ),
                 ],
               ),
               error: (error, stackTrace) => SliverToBoxAdapter(

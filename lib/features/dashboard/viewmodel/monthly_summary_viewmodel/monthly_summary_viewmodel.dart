@@ -29,6 +29,14 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
     );
   }
 
+  FutureVoid refresh() async {
+    final summary = await getMonthlySummary();
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (data) => state = AsyncValue.data(data),
+    );
+  }
+
   FutureEither<DashboardMonthlySummaryState> getMonthlySummary() async {
     final res = await ref
         .read(transactionSummaryRemoteRepositoryProvider)

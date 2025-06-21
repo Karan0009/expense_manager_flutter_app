@@ -1,7 +1,6 @@
 import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/data/models/transactions/user_transaction.dart';
-import 'package:expense_manager/features/dashboard/viewmodel/dashboard_uncategorized_transactions_list_viewmodel/dashboard_uncategorized_transactions_list_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
@@ -103,7 +102,12 @@ class _DashboardTransactionCardState extends State<DashboardTransactionCard> {
               ),
             ),
             TextButton.icon(
-              onPressed: () {},
+              onPressed: () async {
+                await widget.showTransactionDetailsBottomSheet(
+                  'Edit Transaction',
+                  widget.transaction,
+                );
+              },
               icon: const Icon(
                 Icons.add,
                 size: 24,

@@ -43,10 +43,8 @@ class CustomButton extends StatelessWidget {
       onLongPress: prefixIcon == null
           ? (isDisabled || isLoading ? null : onLongPressed)
           : null,
-      onPressed: onLongPressed == null
-          ? (prefixIcon == null
-              ? (isDisabled || isLoading ? null : onPressed)
-              : null)
+      onPressed: prefixIcon == null
+          ? (isDisabled || isLoading ? null : onPressed)
           : null,
       style: buttonStyle?.copyWith(
         shadowColor: WidgetStateProperty.resolveWith<Color>(
@@ -77,11 +75,7 @@ class CustomButton extends StatelessWidget {
       onLongPress: prefixIcon == null
           ? (isDisabled || isLoading ? null : onLongPressed)
           : null,
-      onTap: onLongPressed == null
-          ? isDisabled || isLoading
-              ? null
-              : onPressed
-          : null,
+      onTap: isDisabled || isLoading ? null : onPressed,
       child: Container(
         height: containerHeight ?? 30,
         width: containerWidth ?? 162,

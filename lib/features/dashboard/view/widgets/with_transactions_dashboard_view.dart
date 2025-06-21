@@ -5,6 +5,7 @@ import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/core/widgets/custom_input_field.dart';
+import 'package:expense_manager/core/widgets/filling_animation_button.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/data/models/category/main_category.dart';
 import 'package:expense_manager/data/models/category/sub_category.dart';
@@ -42,11 +43,56 @@ class _WithTransactionsDashboardViewState
 
   final newSubCatNameController = TextEditingController();
   final newSubCatDescController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
 
   SubCategory? selectedSubCat;
   MainCategory? selectedCat;
 
   bool showAddExpenseLoading = false;
+  bool isDeleteButtonLoading = false;
+  bool isEditButtonLoading = false;
+  bool isUncategorizedTransactionsListLoading = false;
+  bool showScrollToTopButton = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(() async {
+      // print(
+      //     "clients: ${_scrollController.hasClients}, Scroll position: ${_scrollController.position.pixels}, Max Scroll Extent: ${_scrollController.position.maxScrollExtent}, screen height: ${MediaQuery.of(context).size.height} ,should show up ${_scrollController.position.pixels > MediaQuery.of(context).size.height}");
+      if (_scrollController.position.pixels ==
+          _scrollController.position.maxScrollExtent) {
+        setState(() {
+          isUncategorizedTransactionsListLoading = true;
+        });
+
+        await ref
+            .read(dashboardUncategorizedTransactionsListViewModelProvider
+                .notifier)
+            .loadMoreTransactions();
+
+        setState(() {
+          isUncategorizedTransactionsListLoading = false;
+        });
+
+        print(
+            "isUncategorizedTransactionsListLoading: $isUncategorizedTransactionsListLoading");
+      }
+
+      if (context.mounted &&
+          _scrollController.hasClients &&
+          _scrollController.position.pixels >
+              MediaQuery.of(context).size.height) {
+        setState(() {
+          showScrollToTopButton = true;
+        });
+      } else {
+        setState(() {
+          showScrollToTopButton = false;
+        });
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -56,6 +102,7 @@ class _WithTransactionsDashboardViewState
     newSubCatNameController.dispose();
     newSubCatDescController.dispose();
     searchCategoryController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -220,7 +267,7 @@ class _WithTransactionsDashboardViewState
                               buttonText: buttonLabel,
                               isLoading: showAddExpenseLoading,
                               onPressed: () async {
-                                state(() {
+                                setState(() {
                                   showAddExpenseLoading = true;
                                 });
 
@@ -239,7 +286,7 @@ class _WithTransactionsDashboardViewState
                                       transaction.transactionDatetime,
                                     );
 
-                                state(() {
+                                setState(() {
                                   showAddExpenseLoading = false;
                                 });
                                 // todo: hide loading
@@ -262,27 +309,27 @@ class _WithTransactionsDashboardViewState
                               },
                             ),
                             SizedBox(height: 10),
-                            CustomButton(
-                              isDisabled: false,
-                              buttonText: 'Delete Transaction',
-                              isLoading: false,
-                              style: Theme.of(context)
-                                  .elevatedButtonTheme
-                                  .style!
-                                  .copyWith(
-                                      backgroundColor:
-                                          WidgetStateColor.resolveWith(
-                                    (_) => ColorsConfig.color8,
-                                  )),
-                              onLongPressed: () async {
+                            AnimatedLongPressButton(
+                              text: 'Delete Transaction',
+                              onLongPress: () async {
                                 if (transaction.id == null) {
                                   // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
                                   return;
                                 }
 
+                                state(() {
+                                  isDeleteButtonLoading = true;
+                                });
+
+                                await AppUtils.delay(3000);
+
                                 final result = await ref
                                     .read(addExpenseViewModelProvider.notifier)
                                     .delete(transaction.id!);
+
+                                state(() {
+                                  isDeleteButtonLoading = false;
+                                });
 
                                 result.fold((error) {
                                   log(error.message);
@@ -297,7 +344,15 @@ class _WithTransactionsDashboardViewState
                                   // TODO: DO SOMETHING TO SHOW TRANSACTION deleted
                                 });
                               },
+                              onTap: () {
+                                // Handle tap
+                              },
+                              height: 53,
+                              backgroundColor: ColorsConfig.color8,
+                              animatedColor: ColorsConfig.color8,
+                              isLoading: isDeleteButtonLoading,
                             ),
+                            SizedBox(height: 10),
                           ],
                         ),
                       ),
@@ -821,74 +876,86 @@ class _WithTransactionsDashboardViewState
   @override
   Widget build(BuildContext context) {
     return Stack(children: [
-      CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(
-                'Your Expenses',
-                style: Theme.of(context).textTheme.headlineMedium,
+      RefreshIndicator(
+        onRefresh: () async {
+          await ref.read(monthlySummaryViewModelProvider.notifier).refresh();
+          await ref.read(dailySummaryGraphViewModelProvider.notifier).refresh();
+          await ref
+              .read(dashboardUncategorizedTransactionsListViewModelProvider
+                  .notifier)
+              .refresh();
+        },
+        child: CustomScrollView(
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  'Your Expenses',
+                  style: Theme.of(context).textTheme.headlineMedium,
+                ),
               ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: 10,
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: 10,
+              ),
             ),
-          ),
-          SliverToBoxAdapter(
-            child: ref.watch(monthlySummaryViewModelProvider).when(
-                  data: (data) {
-                    return ExpensesSummaryCard();
-                  },
-                  error: (error, stackTrace) => FittedBox(
-                    child: Text(
-                      "Err",
-                      textHeightBehavior: TextHeightBehavior(
-                        applyHeightToFirstAscent: false,
-                        applyHeightToLastDescent: false,
-                      ),
-                      style: TextStyle(
-                        fontSize: 29,
-                        color: ColorsConfig.textColor4,
-                        fontFamily: GoogleFonts.inter().fontFamily,
-                        fontWeight: FontWeight.w700,
+            SliverToBoxAdapter(
+              child: ref.watch(monthlySummaryViewModelProvider).when(
+                    data: (data) {
+                      return ExpensesSummaryCard();
+                    },
+                    error: (error, stackTrace) => FittedBox(
+                      child: Text(
+                        "Err",
+                        textHeightBehavior: TextHeightBehavior(
+                          applyHeightToFirstAscent: false,
+                          applyHeightToLastDescent: false,
+                        ),
+                        style: TextStyle(
+                          fontSize: 29,
+                          color: ColorsConfig.textColor4,
+                          fontFamily: GoogleFonts.inter().fontFamily,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
+                    loading: () => cardLoader(context),
                   ),
-                  loading: () => cardLoader(context),
-                ),
-          ),
-          SliverToBoxAdapter(
-            child: const SizedBox(
-              height: 10,
             ),
-          ),
-          SliverToBoxAdapter(
-            child: ref.watch(dailySummaryGraphViewModelProvider).when(
-                  data: (data) => DailySummaryGraphCard(),
-                  error: (error, _) => Text(
-                    'Error loading data',
-                    style: Theme.of(context).textTheme.bodyMedium,
+            SliverToBoxAdapter(
+              child: const SizedBox(
+                height: 10,
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: ref.watch(dailySummaryGraphViewModelProvider).when(
+                    data: (data) => DailySummaryGraphCard(),
+                    error: (error, _) => Text(
+                      'Error loading data',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    loading: () => cardLoader(context),
                   ),
-                  loading: () => cardLoader(context),
-                ),
-          ),
-          SliverToBoxAdapter(
-            child: const SizedBox(
-              height: 10,
             ),
-          ),
-          DashboardUncategorizedTransactionsList(
-            showTransactionDetailsBottomSheet: _showEditExpenseBottomSheet,
-          ),
-          SliverToBoxAdapter(
-            child: SizedBox(
-              height: AppUtils.getNavbarHeight(context) * 2,
+            SliverToBoxAdapter(
+              child: const SizedBox(
+                height: 10,
+              ),
             ),
-          ),
-        ],
+            DashboardUncategorizedTransactionsList(
+              isLoading: isUncategorizedTransactionsListLoading,
+              showTransactionDetailsBottomSheet: _showEditExpenseBottomSheet,
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(
+                height: AppUtils.getNavbarHeight(context) * 2,
+              ),
+            ),
+          ],
+        ),
       ),
       Positioned(
         bottom: AppUtils.getNavbarHeight(context) + 10,
@@ -913,7 +980,6 @@ class _WithTransactionsDashboardViewState
                   .read(dailySummaryGraphViewModelProvider.notifier)
                   .addNewTransaction(newTransaction);
             }
-            print(newTransaction);
           },
           isLoading: false,
           buttonText: 'Add Expense',
@@ -939,6 +1005,33 @@ class _WithTransactionsDashboardViewState
             borderRadius: BorderRadius.circular(20),
           ),
         ),
+      ),
+      // Scroll to top button
+
+      Positioned(
+        bottom: AppUtils.getNavbarHeight(context) + 10,
+        left: MediaQuery.of(context).size.width - 80,
+        child: showScrollToTopButton
+            ? IconButton(
+                style: IconButton.styleFrom(
+                  backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.5),
+                  padding: EdgeInsets.all(10),
+                  shape: CircleBorder(),
+                ),
+                onPressed: () async {
+                  await _scrollController.animateTo(
+                    0,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                  );
+                },
+                icon: const Icon(
+                  Icons.arrow_upward_rounded,
+                  size: 24,
+                  color: ColorsConfig.textColor3,
+                ),
+              )
+            : SizedBox.shrink(),
       ),
     ]);
   }

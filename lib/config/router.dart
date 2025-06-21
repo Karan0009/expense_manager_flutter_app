@@ -1,6 +1,7 @@
 import 'package:expense_manager/core/layouts/home_layout.dart';
 import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/enter_otp_page_view.dart';
+import 'package:expense_manager/features/sms_permission_screen/view/pages/sms_permission_page_view.dart';
 import 'package:expense_manager/features/splash_screen/view/pages/splash_screen_view.dart';
 // import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,10 @@ final GoRouter router = GoRouter(
     GoRoute(
       path: EnterOtpPageView.routePath,
       builder: (context, state) => const EnterOtpPageView(),
+    ),
+    GoRoute(
+      path: SmsPermissionPageView.routePath,
+      builder: (context, state) => const SmsPermissionPageView(),
     ),
   ],
 );

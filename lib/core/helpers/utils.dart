@@ -96,7 +96,7 @@ class AppUtils {
 
   static double getNavbarHeight(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    return max(screenSize.height * 0.11, 70);
+    return max(screenSize.height * 0.1, 50);
   }
 
   static Future<void> delay(int milliseconds) async {

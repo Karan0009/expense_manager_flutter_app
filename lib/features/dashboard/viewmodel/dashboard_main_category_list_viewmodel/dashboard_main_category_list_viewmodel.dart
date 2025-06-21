@@ -17,7 +17,7 @@ class DashboardMainCategoryListViewModel
   @override
   Future<DashboardMainCategoriesListState?> build() async {
     _categoryRemoteRepository = ref.watch(categoryRemoteRepositoryProvider);
-    final data = await loadTransctions(state.value?.meta.nextPageNumber ?? 1);
+    final data = await index(state.value?.meta.nextPage ?? 1);
     return data.fold(
       (error) {
         log(error.message);
@@ -32,8 +32,7 @@ class DashboardMainCategoryListViewModel
     );
   }
 
-  FutureEither<DashboardMainCategoriesListState?> loadTransctions(
-      int page) async {
+  FutureEither<DashboardMainCategoriesListState?> index(int page) async {
     final result = await _categoryRemoteRepository.index(
       limit: AppConfig.restClientGetMaxLimit,
       page: page,
