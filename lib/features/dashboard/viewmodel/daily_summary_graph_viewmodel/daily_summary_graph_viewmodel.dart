@@ -85,6 +85,11 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
   }
 
   FutureVoid addNewTransaction(UserTransaction t) async {
+    if (!isTransactionInCurrentWeek(t)) {
+      // If the transaction is not in the current week, do not edit it
+      return;
+    }
+
     int? transactionAmount = int.tryParse(t.amount);
 
     if (transactionAmount == null) {
@@ -127,6 +132,11 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
     UserTransaction updatedTransaction,
     UserTransaction originalTransaction,
   ) async {
+    if (!isTransactionInCurrentWeek(updatedTransaction)) {
+      // If the transaction is not in the current week, do not edit it
+      return;
+    }
+
     int? transactionAmount = int.tryParse(updatedTransaction.amount);
     int? originalTransactionAmount = int.tryParse(originalTransaction.amount);
 
@@ -171,6 +181,10 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
   }
 
   FutureVoid removeTransaction(UserTransaction transaction) async {
+    if (!isTransactionInCurrentWeek(transaction)) {
+      // If the transaction is not in the current week, do not remove it
+      return;
+    }
     int? transactionAmount = int.tryParse(transaction.amount);
 
     if (transactionAmount == null) {
@@ -204,5 +218,20 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
       dailySummarizedTransactions: currentTransactions,
       totalSummarizedAmount: newTotalAmount,
     ));
+  }
+
+  bool isTransactionInCurrentWeek(UserTransaction transaction) {
+    final curDate = DateTime.now();
+    final dateRange =
+        AppUtils.getFormattedDateRange(curDate, DateRangeType.week);
+    if (transaction.transactionDatetime == null) {
+      // default date is current date
+      return true;
+    }
+
+    return transaction.transactionDatetime!.day >= dateRange['start'].day &&
+        transaction.transactionDatetime!.day <= dateRange['end'].day &&
+        transaction.transactionDatetime!.month == dateRange['start'].month &&
+        transaction.transactionDatetime!.year == dateRange['start'].year;
   }
 }

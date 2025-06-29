@@ -53,10 +53,31 @@ class _WithTransactionsDashboardViewState
   bool isEditButtonLoading = false;
   bool isUncategorizedTransactionsListLoading = false;
   bool showScrollToTopButton = false;
+  bool showDeleteTrxnonTapMessage = false;
 
   @override
   void initState() {
     super.initState();
+    addScrollListeners();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FocusScope.of(context).unfocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    expenseTitleController.dispose();
+    expenseAmountController.dispose();
+    searchSubCategoryController.dispose();
+    newSubCatNameController.dispose();
+    newSubCatDescController.dispose();
+    searchCategoryController.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void addScrollListeners() {
     _scrollController.addListener(() async {
       // print(
       //     "clients: ${_scrollController.hasClients}, Scroll position: ${_scrollController.position.pixels}, Max Scroll Extent: ${_scrollController.position.maxScrollExtent}, screen height: ${MediaQuery.of(context).size.height} ,should show up ${_scrollController.position.pixels > MediaQuery.of(context).size.height}");
@@ -74,9 +95,6 @@ class _WithTransactionsDashboardViewState
         setState(() {
           isUncategorizedTransactionsListLoading = false;
         });
-
-        print(
-            "isUncategorizedTransactionsListLoading: $isUncategorizedTransactionsListLoading");
       }
 
       if (context.mounted &&
@@ -94,18 +112,7 @@ class _WithTransactionsDashboardViewState
     });
   }
 
-  @override
-  void dispose() {
-    expenseTitleController.dispose();
-    expenseAmountController.dispose();
-    searchSubCategoryController.dispose();
-    newSubCatNameController.dispose();
-    newSubCatDescController.dispose();
-    searchCategoryController.dispose();
-    _scrollController.dispose();
-    super.dispose();
-  }
-
+  //*  FOR ADD, EDIT, DELETE EXPENSE BOTTOM SHEET
   Future<Map<String, dynamic>?> _showEditExpenseBottomSheet(
     String buttonLabel,
     UserTransaction? transaction,
@@ -133,8 +140,7 @@ class _WithTransactionsDashboardViewState
       barrierColor: Colors.black.withValues(alpha: 0.7),
       backgroundColor: Colors.transparent,
       builder: (context) {
-        return StatefulBuilder(
-            builder: (BuildContext context, StateSetter state) {
+        return StatefulBuilder(builder: (context, state) {
           return Consumer(
             builder: (context, ref, _) {
               return Stack(
@@ -262,19 +268,23 @@ class _WithTransactionsDashboardViewState
                               ),
                             ),
                             SizedBox(height: 30),
+
+                            // add or edit transaction button in modal
                             CustomButton(
                               isDisabled: false,
                               buttonText: buttonLabel,
                               isLoading: showAddExpenseLoading,
                               onPressed: () async {
-                                setState(() {
-                                  showAddExpenseLoading = true;
-                                });
-
                                 if (transaction.id == null) {
                                   // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
                                   return;
                                 }
+                                state(() {
+                                  showAddExpenseLoading = true;
+                                });
+                                setState(() {
+                                  showAddExpenseLoading = true;
+                                });
 
                                 final result = await ref
                                     .read(addExpenseViewModelProvider.notifier)
@@ -286,15 +296,16 @@ class _WithTransactionsDashboardViewState
                                       transaction.transactionDatetime,
                                     );
 
+                                state(() {
+                                  showAddExpenseLoading = false;
+                                });
                                 setState(() {
                                   showAddExpenseLoading = false;
                                 });
-                                // todo: hide loading
 
                                 result.fold((error) {
                                   log(error.message);
                                   // TODO: DO SOMETHING TO SHOW SOME ERROR OCCURED
-                                  // some error occured
                                 }, (data) {
                                   Navigator.of(context).pop({
                                     'action': 'edit',
@@ -303,12 +314,12 @@ class _WithTransactionsDashboardViewState
                                       subCategory: selectedSubCat,
                                     )
                                   });
-                                  // TODO: DO SOMETHING TO SHOW TRANSACTION ADDED
                                 });
-                                // ref.read()
                               },
                             ),
                             SizedBox(height: 10),
+
+                            // delete transaction button in modal
                             AnimatedLongPressButton(
                               text: 'Delete Transaction',
                               onLongPress: () async {
@@ -344,15 +355,25 @@ class _WithTransactionsDashboardViewState
                                   // TODO: DO SOMETHING TO SHOW TRANSACTION deleted
                                 });
                               },
-                              onTap: () {
-                                // Handle tap
+                              onTap: () async {
+                                state(() {
+                                  showDeleteTrxnonTapMessage = true;
+                                });
+
+                                await AppUtils.delay(1000);
+
+                                state(() {
+                                  showDeleteTrxnonTapMessage = false;
+                                });
                               },
                               height: 53,
                               backgroundColor: ColorsConfig.color8,
                               animatedColor: ColorsConfig.color8,
                               isLoading: isDeleteButtonLoading,
                             ),
-                            SizedBox(height: 10),
+
+                            // BOTTOM MARGIN
+                            SizedBox(height: 30),
                           ],
                         ),
                       ),
@@ -381,6 +402,34 @@ class _WithTransactionsDashboardViewState
                       ),
                     ),
                   ),
+
+                  // Show message to long press to delete transaction
+                  if (showDeleteTrxnonTapMessage)
+                    Positioned(
+                      top: 170,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: ColorsConfig.bgColor1,
+                          border: Border.all(
+                            color: ColorsConfig.color4,
+                            width: 1,
+                            style: BorderStyle.solid,
+                          ),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        padding: EdgeInsets.all(9),
+                        child: Text('Long press to delete transaction',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context)
+                                .textTheme
+                                .labelMedium!
+                                .copyWith(
+                                  color: ColorsConfig.textColor3,
+                                )),
+                      ),
+                    ),
                 ],
               );
             },
@@ -875,6 +924,7 @@ class _WithTransactionsDashboardViewState
 
   @override
   Widget build(BuildContext context) {
+    print('WithTransactionsDashboardView build');
     return Stack(children: [
       RefreshIndicator(
         onRefresh: () async {

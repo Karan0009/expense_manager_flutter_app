@@ -17,6 +17,7 @@ class DashboardPageView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       FocusScope.of(context).unfocus();
+
       if (Platform.isAndroid) {
         if (await PermissionService.isSmsPermissionGranted()) {
           SmsService().initialize(

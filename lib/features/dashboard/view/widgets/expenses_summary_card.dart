@@ -12,6 +12,7 @@ class ExpensesSummaryCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    print("ExpensesSummaryCard build called");
     final maxWidth = MediaQuery.of(context).size.width;
     return Container(
       padding: EdgeInsets.all(16.0),

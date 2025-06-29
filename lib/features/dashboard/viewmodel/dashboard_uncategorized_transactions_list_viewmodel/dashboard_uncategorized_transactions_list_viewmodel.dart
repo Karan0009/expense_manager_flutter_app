@@ -35,7 +35,23 @@ class DashboardUncategorizedTransactionsListViewModel
     );
   }
 
+  void resetDateState() {
+    state = AsyncValue.data(
+      DashboardUncategorizedTransactionsState(
+        uncategorizedTransactions: [],
+        meta: Meta(
+          totalCount: 0,
+          filters: {},
+          lastPage: 0,
+          nextPage: 0,
+          totalPages: 1,
+        ),
+      ),
+    );
+  }
+
   FutureVoid refresh() async {
+    resetDateState();
     state = const AsyncValue.loading();
     final result = await loadTransctions(1);
 
@@ -151,32 +167,37 @@ class DashboardUncategorizedTransactionsListViewModel
     final existingIndex =
         currentTransactions.indexWhere((t) => t.id == updatedTransaction.id);
 
-    if (existingIndex != -1) {
-      if (updatedTransaction.subCategory == null ||
-          updatedTransaction.subCategory!.id != 1) {
-        currentTransactions.removeAt(existingIndex);
-        // if sub category is uncategorized, remove the transaction
+    // If the transaction does not exist, do nothing
+    if (existingIndex == -1) {
+      return;
+    }
 
-        state = AsyncValue.data(DashboardUncategorizedTransactionsState(
-          uncategorizedTransactions: currentTransactions,
-          meta: state.value?.meta.copyWith(
-                totalCount: max((state.value?.meta.totalCount ?? 0) - 1, 0),
-              ) ??
-              Meta(totalCount: 1),
-        ));
-      } else {
-        // Update the existing transaction
-        currentTransactions[existingIndex] = updatedTransaction;
+    if (updatedTransaction.subCategory == null ||
+        updatedTransaction.subCategory!.id != AppConfig.uncategorizedSubCatId) {
+      // * if category got is categorized now then do following
+      currentTransactions.removeAt(existingIndex);
+      // if sub category is uncategorized, remove the transaction
 
-        // Update the state with the modified list
-        state = AsyncValue.data(DashboardUncategorizedTransactionsState(
-          uncategorizedTransactions: currentTransactions,
-          meta: state.value?.meta.copyWith(
-                totalCount: (state.value?.meta.totalCount ?? 0) + 1,
-              ) ??
-              Meta(totalCount: 1),
-        ));
-      }
+      state = AsyncValue.data(DashboardUncategorizedTransactionsState(
+        uncategorizedTransactions: currentTransactions,
+        meta: state.value?.meta.copyWith(
+              totalCount: max((state.value?.meta.totalCount ?? 0) - 1, 0),
+            ) ??
+            Meta(totalCount: 1),
+      ));
+    } else {
+      // * if category got is still uncategorized then do following
+      // Update the existing transaction
+      currentTransactions[existingIndex] = updatedTransaction;
+
+      // Update the state with the modified list
+      state = AsyncValue.data(DashboardUncategorizedTransactionsState(
+        uncategorizedTransactions: currentTransactions,
+        meta: state.value?.meta.copyWith(
+              totalCount: (state.value?.meta.totalCount ?? 0),
+            ) ??
+            Meta(totalCount: 1),
+      ));
     }
   }
 

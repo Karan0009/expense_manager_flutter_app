@@ -70,6 +70,11 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
   }
 
   FutureVoid addNewTransaction(UserTransaction t) async {
+    if (t.transactionDatetime != null &&
+        t.transactionDatetime!.month != DateTime.now().month) {
+      return;
+    }
+
     int? transactionAmount = int.tryParse(t.amount);
 
     if (transactionAmount == null) {
@@ -110,6 +115,10 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
   }
 
   FutureVoid removeTransaction(UserTransaction transaction) async {
+    if (transaction.transactionDatetime != null &&
+        transaction.transactionDatetime!.month != DateTime.now().month) {
+      return;
+    }
     int? transactionAmount = int.tryParse(transaction.amount);
 
     if (transactionAmount == null) {

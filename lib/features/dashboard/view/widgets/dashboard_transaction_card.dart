@@ -101,33 +101,34 @@ class _DashboardTransactionCardState extends State<DashboardTransactionCard> {
                 ],
               ),
             ),
-            TextButton.icon(
-              onPressed: () async {
-                await widget.showTransactionDetailsBottomSheet(
-                  'Edit Transaction',
-                  widget.transaction,
-                );
-              },
-              icon: const Icon(
-                Icons.add,
-                size: 24,
-                color: ColorsConfig.textColor3,
-              ),
-              label: Text(
-                "Add",
-                style: Theme.of(context).textTheme.labelMedium!.copyWith(
-                      color: ColorsConfig.textColor5,
-                    ),
-              ),
-              style: TextButton.styleFrom(
-                backgroundColor: ColorsConfig.color1,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
-              ),
-            ),
+            // TODO: ADD THIS FUNCTIONALITY LATER
+            // TextButton.icon(
+            //   onPressed: () async {
+            //     await widget.showTransactionDetailsBottomSheet(
+            //       'Edit Transaction',
+            //       widget.transaction,
+            //     );
+            //   },
+            //   icon: const Icon(
+            //     Icons.add,
+            //     size: 24,
+            //     color: ColorsConfig.textColor3,
+            //   ),
+            //   label: Text(
+            //     "Add",
+            //     style: Theme.of(context).textTheme.labelMedium!.copyWith(
+            //           color: ColorsConfig.textColor5,
+            //         ),
+            //   ),
+            //   style: TextButton.styleFrom(
+            //     backgroundColor: ColorsConfig.color1,
+            //     shape: RoundedRectangleBorder(
+            //       borderRadius: BorderRadius.circular(8),
+            //     ),
+            //     padding:
+            //         const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+            //   ),
+            // ),
           ],
         ),
       ),

@@ -36,11 +36,11 @@ class ShareViewController: RSIShareViewController {
     // Use this method to return false if you don't want to redirect to host app automatically.
     // Default is true
     override func shouldAutoRedirect() -> Bool {
-        return true
+        return false
     }
 
-    // override func presentationAnimationDidFinish() {
-    //     super.presentationAnimationDidFinish()
-    //     navigationController?.navigationBar.topItem?.rightBarButtonItem?.title = "Send"
-    // }
+    override func presentationAnimationDidFinish() {
+        super.presentationAnimationDidFinish()
+        navigationController?.navigationBar.topItem?.rightBarButtonItem?.title = "Send"
+    }
 }
