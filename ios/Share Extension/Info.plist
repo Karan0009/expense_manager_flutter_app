@@ -11,18 +11,29 @@
 		<key>NSExtensionAttributes</key>
         <dict>
             <key>PHSupportedMediaTypes</key>
-               <array>
-                   <!--Add this flag, if you want to support sharing images into your app-->
-                   <string>Image</string>
-               </array>
+            <array>
+                <!--TODO: Add this flag, if you want to support sharing video into your app
+                <string>Video</string> -->
+                <!--TODO: Add this flag, if you want to support sharing images into your app-->
+                <string>Image</string>
+            </array>
             <key>NSExtensionActivationRule</key>
             <dict>
-                <!--Add this flag, if you want to support sharing text into your app-->
+                <!--TODO: Add this flag, if you want to support sharing text into your app-->
                 <key>NSExtensionActivationSupportsText</key>
                 <true/>
-            	<!--Add this flag, if you want to support sharing images into your app-->
+                <!--TODO: Add this tag, if you want to support sharing urls into your app
+            	<key>NSExtensionActivationSupportsWebURLWithMaxCount</key>
+            	<integer>1</integer>-->
+            	<!--TODO: Add this flag, if you want to support sharing images into your app -->
                 <key>NSExtensionActivationSupportsImageWithMaxCount</key>
-                <integer>10</integer>
+                <integer>1</integer>
+                <!--TODO: Add this flag, if you want to support sharing video into your app
+                <key>NSExtensionActivationSupportsMovieWithMaxCount</key>
+                <integer>100</integer>-->
+                <!--TODO: Add this flag, if you want to support sharing other files into your app
+				<key>NSExtensionActivationSupportsFileWithMaxCount</key>
+				<integer>1</integer>-->
             </dict>
         </dict>
 		<key>NSExtensionMainStoryboard</key>

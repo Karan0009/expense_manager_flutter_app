@@ -7,7 +7,7 @@ part of 'monthly_summary_viewmodel.dart';
 // **************************************************************************
 
 String _$monthlySummaryViewModelHash() =>
-    r'3204090e4ff037aa15ba3c77bcc6bd1d67bd42ff';
+    r'b02dc1cb4e2306e5c6cc64fb4c0ce57d997fda98';
 
 /// See also [MonthlySummaryViewModel].
 @ProviderFor(MonthlySummaryViewModel)

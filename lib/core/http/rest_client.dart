@@ -87,8 +87,12 @@ class RestClient {
     }
   }
 
-  FutureEither<Response> postRequest(
-      {required String url, dynamic body, bool requireAuth = true}) async {
+  FutureEither<Response> postRequest({
+    required String url,
+    dynamic body,
+    bool requireAuth = true,
+    bool formData = false,
+  }) async {
     try {
       if (requireAuth) {
         final authToken = await _authLocalRepository.getAccessToken();
@@ -110,6 +114,10 @@ class RestClient {
             _dio.options.headers["Authorization"] = "Bearer $r";
           },
         );
+      }
+
+      if (formData) {
+        _dio.options.contentType = 'multipart/form-data';
       }
 
       if (AppConfig.logHttp) {

@@ -1,6 +1,7 @@
 import 'package:expense_manager/core/layouts/home_layout.dart';
 import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/enter_otp_page_view.dart';
+import 'package:expense_manager/features/shared_raw_transaction/view/pages/shared_raw_transaction_view.dart';
 import 'package:expense_manager/features/sms_permission_screen/view/pages/sms_permission_page_view.dart';
 import 'package:expense_manager/features/splash_screen/view/pages/splash_screen_view.dart';
 // import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
@@ -43,6 +44,15 @@ final GoRouter router = GoRouter(
       path: SplashScreenView.routePath,
       builder: (BuildContext context, GoRouterState state) =>
           const SplashScreenView(),
+    ),
+    GoRoute(
+      name: SharedRawTransactionView.routePath,
+      path: SharedRawTransactionView.routePath,
+      builder: (BuildContext context, GoRouterState state) =>
+          SharedRawTransactionView(
+        images: (state.extra as dynamic)?['images'] ?? [],
+        text: (state.extra as dynamic)?['text'] as String? ?? '',
+      ),
     ),
     GoRoute(
       path: LoginPageView.routePath,

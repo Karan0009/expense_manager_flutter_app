@@ -25,6 +25,10 @@ class AppConfig {
   static const String sortByDesc = 'DESC';
   static const int restClientGetMaxLimit = 10;
   static const int uncategorizedSubCatId = 1;
+
+  static const String rawTransactionTypeWAText = 'WA_TEXT';
+  static const String rawTransactionTypeWAImage = 'WA_IMAGE';
+  static const String rawTransactionTypeSMS = 'SMS';
 }
 
 enum DateRangeType { week, month, year }

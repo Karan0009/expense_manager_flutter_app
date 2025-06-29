@@ -53,7 +53,16 @@ class ApiResponse<D, T> {
 
     return ApiResponse<D, T>(
       data: parsedData as D,
-      meta: Meta.fromMap(map['meta'] as Map<String, dynamic>),
+      meta: map['meta'] != null &&
+              (map['meta'] as Map<String, dynamic>).isNotEmpty
+          ? Meta.fromMap(map['meta'] as Map<String, dynamic>)
+          : Meta(
+              totalCount: 0,
+              filters: {},
+              lastPage: 0,
+              nextPage: 0,
+              totalPages: 1,
+            ),
     );
   }
 

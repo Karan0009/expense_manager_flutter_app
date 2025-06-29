@@ -7,7 +7,7 @@ part of 'add_expense_viewmodel.dart';
 // **************************************************************************
 
 String _$addExpenseViewModelHash() =>
-    r'b35674b411635e5bfef45ed18fad912fc4d80b1f';
+    r'56238ffee2108dd83e87ed187f27b2bdf89752f0';
 
 /// See also [AddExpenseViewModel].
 @ProviderFor(AddExpenseViewModel)
