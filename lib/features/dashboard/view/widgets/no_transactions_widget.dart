@@ -146,7 +146,7 @@ class _NoTransactionsWidgetState extends ConsumerState<NoTransactionsWidget> {
                                                   .addSubCategoryToList(res);
                                             }
                                           },
-                                          createButtonText: 'Create Category',
+                                          createButtonText: 'Create',
                                           showCreateButton: true,
                                           searchHintText: 'Search Category',
                                         ),

@@ -7,7 +7,7 @@ part of 'daily_summary_graph_viewmodel.dart';
 // **************************************************************************
 
 String _$dailySummaryGraphViewModelHash() =>
-    r'3f694352a7c0482d4a058c20eb907cbe0974e127';
+    r'501c3935a4cafb9af3e6a08ba86e4d34c3f73ace';
 
 /// See also [DailySummaryGraphViewModel].
 @ProviderFor(DailySummaryGraphViewModel)

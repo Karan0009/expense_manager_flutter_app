@@ -11,7 +11,6 @@ class SplashScreenViewModel extends _$SplashScreenViewModel {
 
   @override
   FutureOr<Token?> build() async {
-    // _authRemoteRepository = ref.watch(authRemoteRepositoryProvider);
     _authLocalRepository = ref.watch(authLocalRepositoryProvider);
 
     return await checkIfUserLoggedIn();

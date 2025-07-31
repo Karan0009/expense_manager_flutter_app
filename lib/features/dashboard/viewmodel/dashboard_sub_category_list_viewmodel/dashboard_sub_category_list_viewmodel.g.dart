@@ -7,7 +7,7 @@ part of 'dashboard_sub_category_list_viewmodel.dart';
 // **************************************************************************
 
 String _$dashboardSubCategoryListViewModelHash() =>
-    r'6818b119e560a7413263bc098aa3e52ff794054d';
+    r'acc4a747a07b823b5e162d1032891c98742a794c';
 
 /// See also [DashboardSubCategoryListViewModel].
 @ProviderFor(DashboardSubCategoryListViewModel)

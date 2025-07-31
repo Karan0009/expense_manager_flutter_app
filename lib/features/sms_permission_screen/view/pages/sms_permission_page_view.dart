@@ -1,8 +1,14 @@
+import 'dart:developer';
+
+import 'package:expense_manager/config/app_config.dart';
 import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/permission_service.dart';
 import 'package:expense_manager/core/helpers/sms_service.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
+import 'package:expense_manager/core/http/rest_client.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
+import 'package:expense_manager/data/repositories/auth/auth_local_repository.dart';
+import 'package:expense_manager/data/repositories/raw_transaction/raw_transaction_local_repository.dart';
 import 'package:expense_manager/features/sms_permission_screen/view/widgets/sms_example_card.dart';
 import 'package:flutter/material.dart';
 
@@ -18,10 +24,25 @@ class SmsPermissionPageView extends StatelessWidget {
     if (granted) {
       SmsService().initialize(
           allowedSenders: [],
-          onMessageReceived: (message) {
-            // Handle the received SMS message here
-            print("📨 Received SMS: $message");
-            AppUtils.showSnackBar(context, "📩 SMS received: $message");
+          onMessageReceived: (message) async {
+            Future.microtask(() async {
+              log("📨 Received SMS: $message");
+              final repository = RawTransactionLocalRepository(
+                restClient: RestClient(
+                  authLocalRepository: AuthLocalRepository(),
+                ),
+              );
+              final result = await repository.create(
+                type: AppConfig.rawTransactionTypeSMS,
+                data: message,
+              );
+              log("📨 SMS saved");
+              result.fold((failure) {
+                log('Failed to save sms');
+              }, (success) {
+                log('sms saved successfully');
+              });
+            });
           });
 
       _navigateToDashboard(context);

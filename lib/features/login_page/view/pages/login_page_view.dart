@@ -28,6 +28,17 @@ class _LoginPageState extends ConsumerState<LoginPageView> {
   final formKey = GlobalKey<FormState>();
 
   @override
+  void initState() {
+    super.initState();
+    // Clear the phone number field when the page is opened
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      phoneController.clear();
+      // Unfocus any text fields to avoid keyboard issues
+      FocusScope.of(context).unfocus();
+    });
+  }
+
+  @override
   void dispose() {
     phoneController.dispose();
     super.dispose();
@@ -64,6 +75,7 @@ class _LoginPageState extends ConsumerState<LoginPageView> {
                         controller: phoneController,
                         maxLength: 10,
                         keyboardType: TextInputType.phone,
+                        autoFocus: true,
                         prefixIcon: Center(
                           heightFactor: 0.5,
                           widthFactor: 0,

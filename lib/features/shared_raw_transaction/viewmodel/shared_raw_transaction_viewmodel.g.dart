@@ -7,7 +7,7 @@ part of 'shared_raw_transaction_viewmodel.dart';
 // **************************************************************************
 
 String _$sharedRawTransactionViewModelHash() =>
-    r'931d299a9021cdd9669ce20d6d420d2645e2c7b6';
+    r'2c373ce31bf353eaab5152d667144b5fcaa0efd5';
 
 /// See also [SharedRawTransactionViewModel].
 @ProviderFor(SharedRawTransactionViewModel)

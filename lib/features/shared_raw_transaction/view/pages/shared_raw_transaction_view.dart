@@ -27,7 +27,7 @@ class _SharedRawTransactionViewState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       FocusScope.of(context).unfocus();
 
       // If no images or text are shared, do not proceed
@@ -36,7 +36,7 @@ class _SharedRawTransactionViewState
       }
 
       final vm = ref.read(sharedRawTransactionViewModelProvider.notifier);
-      vm.createRawUserTransaction(
+      await vm.createRawUserTransaction(
         type: widget.images.isNotEmpty
             ? AppConfig.rawTransactionTypeWAImage
             : AppConfig.rawTransactionTypeWAText,

@@ -29,6 +29,33 @@ class AppConfig {
   static const String rawTransactionTypeWAText = 'WA_TEXT';
   static const String rawTransactionTypeWAImage = 'WA_IMAGE';
   static const String rawTransactionTypeSMS = 'SMS';
+
+  static const String rawTransactionsLocalTable = 'raw_transactions';
+
+  static const List<String> allowedSmsHeaders = [
+    'HDFC',
+    'ICICI',
+    'PNB',
+    'SBI',
+    'KOTAK',
+    'AXIS',
+    'YES',
+    'INDUS',
+    'IDFC',
+    'BARODA',
+    'BOBSMS',
+    'UNIONS',
+    'UBISMS',
+    'FEDSMS',
+    'FEDBNK',
+    'AUBANK',
+    // TODO: REMOVE AFTER TESTING
+    '+917988195437',
+  ];
+
+  static const String logoutTypeSelf = 'self';
+  static const String logoutTypeAll = 'all';
+  static const String logoutTypeAllOthers = 'all_others';
 }
 
 enum DateRangeType { week, month, year }

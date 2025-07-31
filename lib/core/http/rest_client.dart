@@ -23,6 +23,22 @@ class RestClient {
   final Dio _dio;
   final AuthLocalRepository _authLocalRepository;
 
+  get authToken async {
+    final token = await _authLocalRepository.getAccessToken();
+    return token.fold(
+      (l) => null,
+      (r) => r,
+    );
+  }
+
+  get refreshToken async {
+    final token = await _authLocalRepository.getRefreshToken();
+    return token.fold(
+      (l) => null,
+      (r) => r,
+    );
+  }
+
   RestClient({required AuthLocalRepository authLocalRepository})
       : _authLocalRepository = authLocalRepository,
         _dio = Dio(

@@ -7,7 +7,7 @@ part of 'dashboard_uncategorized_transactions_list_viewmodel.dart';
 // **************************************************************************
 
 String _$dashboardUncategorizedTransactionsListViewModelHash() =>
-    r'7d5d4f761947123563390a7f3c938ede03a51cb8';
+    r'60eac576e61d603542a154baed953a0ac548fb5a';
 
 /// See also [DashboardUncategorizedTransactionsListViewModel].
 @ProviderFor(DashboardUncategorizedTransactionsListViewModel)

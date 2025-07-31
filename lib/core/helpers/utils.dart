@@ -7,10 +7,14 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class AppUtils {
-  static void showSnackBar(BuildContext context, String message) {
+  static void showSnackBar(BuildContext context, String message,
+      {Duration duration = const Duration(seconds: 3)}) {
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        GlassmorphicSnackBar(message: message),
+        GlassmorphicSnackBar(
+          message: message,
+          duration: duration,
+        ),
       );
     }
   }

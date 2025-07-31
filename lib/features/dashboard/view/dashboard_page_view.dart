@@ -1,41 +1,81 @@
-import 'dart:io';
-
-import 'package:expense_manager/core/helpers/permission_service.dart';
-import 'package:expense_manager/core/helpers/sms_service.dart';
-import 'package:expense_manager/core/helpers/utils.dart';
+import 'dart:async';
+import 'package:expense_manager/config/themes/colors_config.dart';
+import 'package:expense_manager/core/helpers/connectivity_service.dart';
+import 'package:expense_manager/data/repositories/raw_transaction/raw_transaction_local_repository.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/with_transactions_dashboard_view.dart';
-import 'package:expense_manager/features/sms_permission_screen/view/pages/sms_permission_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-class DashboardPageView extends ConsumerWidget {
+class DashboardPageView extends ConsumerStatefulWidget {
   static const String routePath = '/expenses-dashboard';
   const DashboardPageView({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      FocusScope.of(context).unfocus();
+  ConsumerState<DashboardPageView> createState() => _DashboardPageViewState();
+}
 
-      if (Platform.isAndroid) {
-        if (await PermissionService.isSmsPermissionGranted()) {
-          SmsService().initialize(
-              allowedSenders: [],
-              onMessageReceived: (message) {
-                // Handle the received SMS message here
-                print("📨 Received SMS: $message");
-                AppUtils.showSnackBar(context, "📩 SMS received: $message");
-              });
+class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
+  bool hasInternet = false;
+  StreamSubscription<bool>? _connectivitySubscription;
 
-          return;
+  @override
+  void initState() {
+    super.initState();
+    _initializeConnectivity();
+  }
+
+  Future<void> _initializeConnectivity() async {
+    // Check initial connectivity state
+    final initialConnectivity =
+        await ConnectivityService().hasInternetConnection();
+    if (mounted) {
+      setState(() {
+        hasInternet = initialConnectivity;
+      });
+    }
+
+    // Listen to connectivity changes
+    _connectivitySubscription = ConnectivityService()
+        .connectivityStream
+        .listen((hasInternetConnection) {
+      if (mounted) {
+        setState(() {
+          hasInternet = hasInternetConnection;
+        });
+
+        // Auto-sync when connectivity is restored
+        if (hasInternetConnection) {
+          _syncPendingTransactions();
         }
-        if (!context.mounted) return;
-
-        _navigateToSmsPermissionScreen(context);
       }
     });
+  }
 
+  Future<void> _syncPendingTransactions() async {
+    try {
+      final pendingRawTransactions =
+          await ref.read(rawTransactionLocalRepositoryProvider).index();
+
+      for (int i = 0; i < pendingRawTransactions.length; i++) {
+        final transaction = pendingRawTransactions[i];
+        await ref
+            .read(rawTransactionLocalRepositoryProvider)
+            .sync(transaction['id']);
+      }
+    } catch (e) {
+      // Handle sync errors silently or show notification
+      debugPrint('Auto-sync failed: $e');
+    }
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
@@ -51,7 +91,14 @@ class DashboardPageView extends ConsumerWidget {
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16.0 : constraints.maxWidth * 0.2,
               ),
-              child: WithTransactionsDashboardView(),
+              child: hasInternet
+                  ? WithTransactionsDashboardView()
+                  : const Center(
+                      child: Text(
+                        'No internet connection. Please check your network settings.',
+                        style: TextStyle(color: ColorsConfig.textColor3),
+                      ),
+                    ),
 
               // uncategorizedTransactionsState.when(
               //   data: (data) {
@@ -69,8 +116,4 @@ class DashboardPageView extends ConsumerWidget {
       },
     );
   }
-}
-
-void _navigateToSmsPermissionScreen(BuildContext context) {
-  context.push(SmsPermissionPageView.routePath);
 }

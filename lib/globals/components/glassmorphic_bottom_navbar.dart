@@ -3,9 +3,8 @@ import 'dart:ui';
 import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
+import 'package:expense_manager/features/user_account_screen/view/pages/user_account_options_page_view.dart';
 import 'package:expense_manager/globals/providers/bottom_navbar_viewmodel.dart';
-// import 'package:expense_manager/screens/expenses_dashboard_page/view/expenses_dashboard_page_view.dart';
-// import 'package:expense_manager/screens/user_account_page/view/user_account_page_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -20,7 +19,7 @@ class GlassmorphicBottomNavigationBar extends ConsumerStatefulWidget {
       "route": DashboardPageView.routePath
     },
     {"icon": Icons.bar_chart, "route": DashboardPageView.routePath},
-    {"icon": Icons.person, "route": DashboardPageView.routePath}
+    {"icon": Icons.person, "route": UserAccountOptionsPageView.routePath}
   ];
 
   GlassmorphicBottomNavigationBar({
@@ -54,13 +53,9 @@ class _GlassmorphicBottomNavigationBarState
     final viewModel = ref.read(bottomNavbarViewModelProvider.notifier);
     final screenSize = MediaQuery.of(context).size;
     double navbarHeight = AppUtils.getNavbarHeight(context);
-    return Container(
+    return SizedBox(
       child: ClipRRect(
         clipBehavior: Clip.hardEdge,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(20),
-          bottomRight: Radius.circular(20),
-        ),
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 15, sigmaY: 15),
           child: Container(

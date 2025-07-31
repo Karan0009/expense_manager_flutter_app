@@ -10,10 +10,11 @@ class GlassmorphicSnackBar extends SnackBar {
     double blurSigma = 1.0,
     EdgeInsetsGeometry? margin,
     double borderRadius = 16.0,
+    Duration duration = const Duration(seconds: 4),
   }) : super(
           behavior: SnackBarBehavior.floating,
           elevation: 0,
-          duration: Duration(seconds: 10),
+          duration: duration,
           margin: margin ??
               const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           content: ClipRRect(

@@ -6,10 +6,10 @@ import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/data/models/otp.dart';
-import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/create_account_page_view.dart';
 import 'package:expense_manager/features/login_page/view/pages/login_page_view.dart';
 import 'package:expense_manager/features/login_page/viewmodel/auth_viewmodel.dart';
+import 'package:expense_manager/features/splash_screen/view/pages/splash_screen_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,6 +122,7 @@ class _EnterOtpPageState extends ConsumerState<EnterOtpPageView> {
                     const SizedBox(height: 20),
                     Pinput(
                       length: 6,
+                      autofocus: true,
                       defaultPinTheme: defaultPinTheme,
                       validator: (String? value) {
                         if (value == null || value.isEmpty) {
@@ -310,7 +311,7 @@ class _EnterOtpPageState extends ConsumerState<EnterOtpPageView> {
 }
 
 void _navigateToHome(BuildContext context) {
-  context.pushReplacement(DashboardPageView.routePath);
+  context.pushReplacement(SplashScreenView.routePath);
 }
 
 void changePhoneNumberClickHandler(BuildContext context, bool isCreateAccount) {

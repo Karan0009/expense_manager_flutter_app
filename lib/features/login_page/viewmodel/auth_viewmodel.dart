@@ -1,6 +1,7 @@
 import 'package:dartz/dartz.dart';
 import 'package:expense_manager/core/app_failure_type_def.dart';
 import 'package:expense_manager/core/http/http_failure.dart';
+import 'package:expense_manager/core/http/http_type_def.dart';
 import 'package:expense_manager/data/models/login_state.dart';
 import 'package:expense_manager/data/models/otp.dart';
 import 'package:expense_manager/data/models/token.dart';
@@ -166,5 +167,22 @@ class AuthViewModel extends _$AuthViewModel {
     }
 
     return null;
+  }
+
+  Future<bool> logout(String logoutType) async {
+    try {
+      final result = await _authRemoteRepository.logout(logoutType);
+      if (result) {
+        offlineLogout();
+      }
+      return result;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  FutureVoid offlineLogout() async {
+    await _authLocalRepository.clearAccessToken();
+    await _authLocalRepository.clearRefreshToken();
   }
 }

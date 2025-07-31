@@ -109,14 +109,19 @@ class AuthRemoteRepository {
     }
   }
 
-  Future<bool> logout() async {
+  Future<bool> logout(String logoutType) async {
     try {
-      // TODO: USE LOCAL STORAGE
-      // final refreshToken = await _sharedPrefsRepo.getRefreshToken();
+      final refreshToken = await _restClient.refreshToken;
+
+      if (refreshToken == null || refreshToken.isEmpty) {
+        log("No refresh token found");
+        return false;
+      }
 
       final endpoint = 'v1/auth/logout';
       final body = {
-        // "refresh_token": refreshToken,
+        "refresh_token": refreshToken,
+        "logout_type": logoutType,
       };
       final response = await _restClient.postRequest(
         url: endpoint,
@@ -125,21 +130,17 @@ class AuthRemoteRepository {
       );
 
       if (response.isLeft()) {
-        // await _sharedPrefsRepo.clear();
         return false;
       }
       final responseData = response.fold((_) => null, (r) => r.data);
 
       if (responseData != null) {
-        // await _sharedPrefsRepo.clear();
-
         return true;
       }
 
       return false;
     } catch (e) {
       log("Error during logout: $e");
-      // await _sharedPrefsRepo.clear();
       rethrow;
     }
   }

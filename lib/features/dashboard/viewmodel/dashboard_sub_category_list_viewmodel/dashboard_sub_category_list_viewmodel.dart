@@ -47,10 +47,24 @@ class DashboardSubCategoryListViewModel
       },
       (apiResponse) {
         return Right(DashboardSubCategoriesListState(
+          allSubCategories: apiResponse.data,
           subCategories: apiResponse.data,
           meta: apiResponse.meta,
         ));
       },
+    );
+  }
+
+  FutureVoid search(String searchText) async {
+    final filteredSubCategories = state.value?.allSubCategories
+        .where((element) =>
+            element.name.toLowerCase().contains(searchText.toLowerCase()))
+        .toList();
+
+    state = AsyncValue.data(
+      state.value?.copyWith(
+        subCategories: filteredSubCategories ?? [],
+      ),
     );
   }
 
@@ -78,6 +92,10 @@ class DashboardSubCategoryListViewModel
   FutureVoid addSubCategoryToList(SubCategory sc) async {
     if (state.value != null) {
       state = AsyncValue.data(state.value!.copyWith(
+        allSubCategories: [
+          ...state.value!.allSubCategories,
+          sc,
+        ],
         subCategories: [
           ...state.value!.subCategories,
           sc,

@@ -5,9 +5,11 @@ import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/data/models/transactions/summarized_transaction.dart';
+import 'package:expense_manager/features/dashboard/view/particular_transactions_list_page_view.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/monthly_summary_viewmodel/monthly_summary_viewmodel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class ExpensesCarousel extends ConsumerStatefulWidget {
@@ -61,6 +63,94 @@ class _ExpensesCarouselState extends ConsumerState<ExpensesCarousel> {
   @override
   void dispose() {
     super.dispose();
+  }
+
+  Widget buildGrid(BuildContext context, List<SummarizedTransaction> items) {
+    return GridView.builder(
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        mainAxisExtent: 60,
+        crossAxisCount: 2,
+        crossAxisSpacing: 1,
+        mainAxisSpacing: 1,
+      ),
+      itemCount: items.length,
+      clipBehavior: Clip.hardEdge,
+      itemBuilder: (context, index) {
+        return gridItem(
+          Icons.restaurant,
+          items[index].subCategory.name,
+          TransactionHelpers.formatStringAmount(
+            items[index].totalAmount.toString(),
+          ),
+          items[index].subCategory.id,
+        );
+      },
+    );
+  }
+
+  Widget gridItem(
+    IconData icon,
+    String label,
+    String amount,
+    int subCatId,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        context.push(
+          ParticularTransactionsListPageView.routePath,
+          extra: {'subCatId': subCatId},
+        );
+      },
+      child: SizedBox(
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              padding: EdgeInsets.all(5),
+              decoration: BoxDecoration(
+                color: getRandomColor(),
+                borderRadius: BorderRadius.circular(100),
+              ),
+              child: Center(
+                child: Icon(icon, size: 20, color: Colors.red),
+              ),
+            ),
+            const SizedBox(width: 15),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 90,
+                  clipBehavior: Clip.none,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: ColorsConfig.textColor5,
+                      fontSize: 9,
+                      fontWeight: FontWeight.w500,
+                      fontFamily: GoogleFonts.inter().fontFamily,
+                    ),
+                    overflow: TextOverflow.clip,
+                  ),
+                ),
+                Text(
+                  amount,
+                  style: TextStyle(
+                    color: ColorsConfig.textColor4,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    fontFamily: GoogleFonts.inter().fontFamily,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   @override
@@ -163,75 +253,6 @@ Widget _showSkeletonCardsGrid() {
       itemBuilder: (context, index) {
         return SkeletonLoader(width: 100, height: 40);
       },
-    ),
-  );
-}
-
-Widget buildGrid(BuildContext context, List<SummarizedTransaction> items) {
-  return GridView.builder(
-    physics: const NeverScrollableScrollPhysics(),
-    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-      mainAxisExtent: 60,
-      crossAxisCount: 2,
-      crossAxisSpacing: 1,
-      mainAxisSpacing: 1,
-    ),
-    itemCount: items.length,
-    clipBehavior: Clip.hardEdge,
-    itemBuilder: (context, index) {
-      return gridItem(
-        Icons.restaurant,
-        items[index].subCategory.name,
-        TransactionHelpers.formatStringAmount(
-          items[index].totalAmount.toString(),
-        ),
-      );
-    },
-  );
-}
-
-Widget gridItem(IconData icon, String label, String amount) {
-  return SizedBox(
-    child: Row(
-      children: [
-        Container(
-          width: 40,
-          height: 40,
-          padding: EdgeInsets.all(5),
-          decoration: BoxDecoration(
-            color: getRandomColor(),
-            borderRadius: BorderRadius.circular(100),
-          ),
-          child: Center(
-            child: Icon(icon, size: 20, color: Colors.red),
-          ),
-        ),
-        const SizedBox(width: 15),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: ColorsConfig.textColor5,
-                fontSize: 9,
-                fontWeight: FontWeight.w500,
-                fontFamily: GoogleFonts.inter().fontFamily,
-              ),
-            ),
-            Text(
-              amount,
-              style: TextStyle(
-                color: ColorsConfig.textColor4,
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                fontFamily: GoogleFonts.inter().fontFamily,
-              ),
-            ),
-          ],
-        ),
-      ],
     ),
   );
 }

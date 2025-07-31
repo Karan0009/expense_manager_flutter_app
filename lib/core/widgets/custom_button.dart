@@ -17,6 +17,7 @@ class CustomButton extends StatelessWidget {
   final EdgeInsetsGeometry? containerPadding;
   final double? containerHeight;
   final double? containerWidth;
+  final TextStyle? textStyle;
   const CustomButton({
     super.key,
     required this.isLoading,
@@ -30,6 +31,7 @@ class CustomButton extends StatelessWidget {
     this.isDisabled = false,
     this.onPressed,
     this.onLongPressed,
+    this.textStyle,
   });
 
   @override
@@ -40,6 +42,7 @@ class CustomButton extends StatelessWidget {
 
     // TODO: REFACTOR!!!
     Widget buttonWidget = ElevatedButton(
+      clipBehavior: Clip.none,
       onLongPress: prefixIcon == null
           ? (isDisabled || isLoading ? null : onLongPressed)
           : null,
@@ -62,7 +65,8 @@ class CustomButton extends StatelessWidget {
           ? Loader()
           : Text(
               buttonText,
-              style: Theme.of(context).textTheme.labelMedium,
+              style: Theme.of(context).textTheme.labelMedium?.merge(textStyle),
+              softWrap: false,
             ),
     );
 
@@ -70,7 +74,6 @@ class CustomButton extends StatelessWidget {
       return buttonWidget;
     }
     // TODO: REFACTOR!!!
-    List<Widget> children = [prefixIcon!, buttonWidget];
     return GestureDetector(
       onLongPress: prefixIcon == null
           ? (isDisabled || isLoading ? null : onLongPressed)
@@ -91,7 +94,15 @@ class CustomButton extends StatelessWidget {
                   ? defaultBackgroundColor.withValues(alpha: 0.6)
                   : defaultBackgroundColor,
             ),
-        child: Row(children: children),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Flexible(child: prefixIcon!),
+            const SizedBox(width: 5),
+            Flexible(child: buttonWidget),
+          ],
+        ),
       ),
     );
   }

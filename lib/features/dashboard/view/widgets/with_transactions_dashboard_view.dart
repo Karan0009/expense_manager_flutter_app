@@ -97,7 +97,7 @@ class _WithTransactionsDashboardViewState
         });
       }
 
-      if (context.mounted &&
+      if (mounted &&
           _scrollController.hasClients &&
           _scrollController.position.pixels >
               MediaQuery.of(context).size.height) {
@@ -223,7 +223,7 @@ class _WithTransactionsDashboardViewState
                                                   .addSubCategoryToList(res);
                                             }
                                           },
-                                          createButtonText: 'Create Category',
+                                          createButtonText: 'Create',
                                           showCreateButton: true,
                                           searchHintText: 'Search Category',
                                         ),
@@ -579,7 +579,7 @@ class _WithTransactionsDashboardViewState
                                                   .addSubCategoryToList(res);
                                             }
                                           },
-                                          createButtonText: 'Create Category',
+                                          createButtonText: 'Create',
                                           showCreateButton: true,
                                           searchHintText: 'Search Category',
                                         ),
@@ -1008,6 +1008,7 @@ class _WithTransactionsDashboardViewState
         ),
       ),
       Positioned(
+        width: 167,
         bottom: AppUtils.getNavbarHeight(context) + 10,
         left: (MediaQuery.of(context).size.width / 2) - 100,
         child: CustomButton(
@@ -1033,18 +1034,23 @@ class _WithTransactionsDashboardViewState
           },
           isLoading: false,
           buttonText: 'Add Expense',
-          prefixIcon: Icon(Icons.add_rounded),
+          prefixIcon: Icon(
+            Icons.add_rounded,
+            color: ColorsConfig.textColor2,
+            size: 12,
+          ),
           containerHeight: 50,
-          containerWidth: 162,
+          containerWidth: 130,
+          textStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
+                color: ColorsConfig.textColor2,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
           style: ElevatedButton.styleFrom(
             padding: EdgeInsets.all(0),
             backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.9),
-            textStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
-                  color: ColorsConfig.color4,
-                  fontWeight: FontWeight.w600,
-                ),
           ),
-          containerPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+          containerPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
           containerStyle: BoxDecoration(
             color: ColorsConfig.bgColor1,
             border: Border.all(

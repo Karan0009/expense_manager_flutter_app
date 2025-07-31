@@ -1,59 +1,103 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 // ignore_for_file: non_constant_identifier_names
 
-import 'package:expense_manager/core/base/base_model.dart';
+import 'dart:convert';
 
-class User implements BaseModel {
-  final String id;
-  final String name;
+class User {
+  final String? id;
+  final String? name;
+  final String? country_code;
   final String phone_number;
-  final String email;
+  final String? email;
   final String? token;
+  final String? created_at;
 
   User({
-    required this.id,
-    required this.name,
+    this.id,
+    this.name,
+    this.country_code = '+91',
     required this.phone_number,
-    required this.email,
+    this.email,
     this.token,
+    this.created_at,
   });
 
-  /// Factory method to create a User instance from JSON.
-  @override
-  factory User.fromJson(Map<String, dynamic> json) {
+  User copyWith({
+    String? id,
+    String? name,
+    String? country_code,
+    String? phone_number,
+    String? email,
+    String? token,
+    String? created_at,
+  }) {
     return User(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      phone_number: json['phone_number'] as String,
-      email: json['email'] as String,
-      token: json['token'] as String?,
+      id: id ?? this.id,
+      name: name ?? this.name,
+      country_code: country_code ?? this.country_code,
+      phone_number: phone_number ?? this.phone_number,
+      email: email ?? this.email,
+      token: token ?? this.token,
+      created_at: created_at ?? this.created_at,
     );
   }
 
-  /// Convert the User instance to JSON.
-  @override
-  Map<String, dynamic> toJson() {
-    return {
+  Map<String, dynamic> toMap() {
+    return <String, dynamic>{
       'id': id,
       'name': name,
+      'country_code': country_code,
       'phone_number': phone_number,
       'email': email,
       'token': token,
+      'created_at': created_at,
     };
   }
 
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
+      id: map['id'] != null ? map['id'] as String : null,
+      name: map['name'] != null ? map['name'] as String : null,
+      country_code:
+          map['country_code'] != null ? map['country_code'] as String : null,
+      phone_number: map['phone_number'] as String,
+      email: map['email'] != null ? map['email'] as String : null,
+      token: map['token'] != null ? map['token'] as String : null,
+      created_at:
+          map['created_at'] != null ? map['created_at'] as String : null,
+    );
+  }
+
+  String toJson() => json.encode(toMap());
+
+  factory User.fromJson(String source) => User.fromMap(json.decode(source));
+
   @override
   String toString() {
-    return 'User{id: $id, name: $name, phone_number: $phone_number, email: $email, token: $token}';
+    return 'User(id: $id, name: $name, country_code: $country_code, phone_number: $phone_number, email: $email, token: $token, created_at: $created_at)';
   }
 
   @override
-  User clone() {
-    return User(
-      id: id,
-      name: name,
-      phone_number: phone_number,
-      email: email,
-      token: token,
-    );
+  bool operator ==(covariant User other) {
+    if (identical(this, other)) return true;
+
+    return other.id == id &&
+        other.name == name &&
+        other.country_code == country_code &&
+        other.phone_number == phone_number &&
+        other.email == email &&
+        other.token == token &&
+        other.created_at == created_at;
+  }
+
+  @override
+  int get hashCode {
+    return id.hashCode ^
+        name.hashCode ^
+        country_code.hashCode ^
+        phone_number.hashCode ^
+        email.hashCode ^
+        token.hashCode ^
+        created_at.hashCode;
   }
 }

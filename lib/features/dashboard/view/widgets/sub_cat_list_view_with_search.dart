@@ -33,6 +33,13 @@ class _SubCatListViewWithSearchState
   @override
   void initState() {
     super.initState();
+    searchSubCategoryController.addListener(() {
+      // debounce
+      ref
+          .read(dashboardSubCategoryListViewModelProvider.notifier)
+          .search(searchSubCategoryController.text);
+      print("Search text: ${searchSubCategoryController.text}");
+    });
   }
 
   @override
@@ -144,42 +151,41 @@ class _SubCatListViewWithSearchState
                       ],
                     ),
                   ),
-                  if (widget.showCreateButton)
-                    Positioned(
-                      bottom: 20,
-                      right: 20,
-                      child: CustomButton(
-                        onPressed: widget.createButtonOnTap,
-                        isLoading: false,
-                        buttonText: widget.createButtonText,
-                        prefixIcon: Icon(Icons.add_rounded),
-                        containerHeight: 60,
-                        containerWidth: 200,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.all(0),
-                          backgroundColor:
-                              ColorsConfig.bgColor1.withValues(alpha: 0.7),
-                          textStyle:
-                              Theme.of(context).textTheme.labelMedium!.copyWith(
-                                    color: ColorsConfig.color4,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                  Positioned(
+                    bottom: 20,
+                    right: 20,
+                    child: CustomButton(
+                      onPressed: widget.createButtonOnTap,
+                      isLoading: false,
+                      buttonText: widget.createButtonText,
+                      prefixIcon: Icon(Icons.add_rounded),
+                      containerHeight: 60,
+                      containerWidth: 140,
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.all(0),
+                        backgroundColor:
+                            ColorsConfig.bgColor1.withValues(alpha: 0.7),
+                        textStyle:
+                            Theme.of(context).textTheme.labelMedium!.copyWith(
+                                  color: ColorsConfig.color4,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                      ),
+                      containerPadding: EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 0,
+                      ),
+                      containerStyle: BoxDecoration(
+                        color: ColorsConfig.bgColor1.withValues(alpha: 0.7),
+                        border: Border.all(
+                          color: ColorsConfig.color4,
+                          width: 1,
+                          style: BorderStyle.solid,
                         ),
-                        containerPadding: EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 0,
-                        ),
-                        containerStyle: BoxDecoration(
-                          color: ColorsConfig.bgColor1.withValues(alpha: 0.7),
-                          border: Border.all(
-                            color: ColorsConfig.color4,
-                            width: 1,
-                            style: BorderStyle.solid,
-                          ),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
+                  ),
                 ],
               );
             },
