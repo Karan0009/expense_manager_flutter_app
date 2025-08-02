@@ -100,7 +100,7 @@ class _WithTransactionsDashboardViewState
       if (mounted &&
           _scrollController.hasClients &&
           _scrollController.position.pixels >
-              MediaQuery.of(context).size.height) {
+              MediaQuery.of(context).size.height * 0.5) {
         setState(() {
           showScrollToTopButton = true;
         });
@@ -924,171 +924,251 @@ class _WithTransactionsDashboardViewState
 
   @override
   Widget build(BuildContext context) {
-    print('WithTransactionsDashboardView build');
-    return Stack(children: [
-      RefreshIndicator(
-        onRefresh: () async {
-          await ref.read(monthlySummaryViewModelProvider.notifier).refresh();
-          await ref.read(dailySummaryGraphViewModelProvider.notifier).refresh();
-          await ref
-              .read(dashboardUncategorizedTransactionsListViewModelProvider
-                  .notifier)
-              .refresh();
+    debugPrint('============================');
+    debugPrint('WithTransactionsDashboardView build');
+    debugPrint('============================');
+    return Stack(
+      children: [
+        _DashboardMainContent(
+          scrollController: _scrollController,
+          isUncategorizedTransactionsListLoading:
+              isUncategorizedTransactionsListLoading,
+          showEditExpenseBottomSheet: _showEditExpenseBottomSheet,
+          cardLoader: cardLoader,
+        ),
+        _AddExpenseButton(
+          showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
+          ref: ref,
+        ),
+        _ScrollToTopButton(
+          show: showScrollToTopButton,
+          scrollController: _scrollController,
+        ),
+      ],
+    );
+  }
+// ...existing code...
+}
+
+// --- Extracted widgets moved to top-level ---
+
+class _DashboardMainContent extends ConsumerWidget {
+  final ScrollController scrollController;
+  final bool isUncategorizedTransactionsListLoading;
+  final Future<Map<String, dynamic>?> Function(String, UserTransaction?)
+      showEditExpenseBottomSheet;
+  final Widget Function(BuildContext) cardLoader;
+  const _DashboardMainContent({
+    required this.scrollController,
+    required this.isUncategorizedTransactionsListLoading,
+    required this.showEditExpenseBottomSheet,
+    required this.cardLoader,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _DashboardMainContent build <<<');
+    return RefreshIndicator(
+      onRefresh: () async {
+        await ref.read(monthlySummaryViewModelProvider.notifier).refresh();
+        await ref.read(dailySummaryGraphViewModelProvider.notifier).refresh();
+        await ref
+            .read(dashboardUncategorizedTransactionsListViewModelProvider
+                .notifier)
+            .refresh();
+      },
+      child: CustomScrollView(
+        controller: scrollController,
+        slivers: [
+          const _DashboardTitle(),
+          const _DashboardSpacer(height: 10),
+          _DashboardExpensesSummary(cardLoader: cardLoader),
+          const _DashboardSpacer(height: 10),
+          _DashboardDailySummaryGraph(cardLoader: cardLoader),
+          const _DashboardSpacer(height: 10),
+          DashboardUncategorizedTransactionsList(
+            isLoading: isUncategorizedTransactionsListLoading,
+            showTransactionDetailsBottomSheet: showEditExpenseBottomSheet,
+          ),
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: AppUtils.getNavbarHeight(context) * 2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DashboardTitle extends StatelessWidget {
+  const _DashboardTitle();
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _DashboardTitle build <<<');
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Text(
+          'Your Expenses',
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardSpacer extends StatelessWidget {
+  final double height;
+  const _DashboardSpacer({required this.height});
+  @override
+  Widget build(BuildContext context) {
+    return SliverToBoxAdapter(child: SizedBox(height: height));
+  }
+}
+
+class _DashboardExpensesSummary extends ConsumerWidget {
+  final Widget Function(BuildContext) cardLoader;
+  const _DashboardExpensesSummary({required this.cardLoader});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _DashboardExpensesSummary build <<<');
+    return SliverToBoxAdapter(
+      child: ref.watch(monthlySummaryViewModelProvider).when(
+            data: (data) => const ExpensesSummaryCard(),
+            error: (error, stackTrace) => FittedBox(
+              child: Text(
+                "Err",
+                textHeightBehavior: TextHeightBehavior(
+                  applyHeightToFirstAscent: false,
+                  applyHeightToLastDescent: false,
+                ),
+                style: TextStyle(
+                  fontSize: 29,
+                  color: ColorsConfig.textColor4,
+                  fontFamily: GoogleFonts.inter().fontFamily,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            loading: () => cardLoader(context),
+          ),
+    );
+  }
+}
+
+class _DashboardDailySummaryGraph extends ConsumerWidget {
+  final Widget Function(BuildContext) cardLoader;
+  const _DashboardDailySummaryGraph({required this.cardLoader});
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _DashboardDailySummaryGraph build <<<');
+    return SliverToBoxAdapter(
+      child: ref.watch(dailySummaryGraphViewModelProvider).when(
+            data: (data) => const DailySummaryGraphCard(),
+            error: (error, _) => Text(
+              'Error loading data',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            loading: () => cardLoader(context),
+          ),
+    );
+  }
+}
+
+class _AddExpenseButton extends StatelessWidget {
+  final Future<UserTransaction?> Function(String) showAddExpenseBottomSheet;
+  final WidgetRef ref;
+  const _AddExpenseButton(
+      {required this.showAddExpenseBottomSheet, required this.ref});
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _AddExpenseButton build <<<');
+    return Positioned(
+      width: 167,
+      bottom: AppUtils.getNavbarHeight(context) + 10,
+      left: (MediaQuery.of(context).size.width / 2) - 100,
+      child: CustomButton(
+        onPressed: () async {
+          final newTransaction = await showAddExpenseBottomSheet('Add Expense');
+          if (newTransaction != null) {
+            await ref
+                .read(dashboardUncategorizedTransactionsListViewModelProvider
+                    .notifier)
+                .addNewTransaction(newTransaction);
+            await ref
+                .read(monthlySummaryViewModelProvider.notifier)
+                .addNewTransaction(newTransaction);
+            await ref
+                .read(dailySummaryGraphViewModelProvider.notifier)
+                .addNewTransaction(newTransaction);
+          }
         },
-        child: CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  'Your Expenses',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-              ),
+        isLoading: false,
+        buttonText: 'Add Expense',
+        prefixIcon: Icon(
+          Icons.add_rounded,
+          color: ColorsConfig.textColor2,
+          size: 12,
+        ),
+        containerHeight: 50,
+        containerWidth: 130,
+        textStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
+              color: ColorsConfig.textColor2,
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
             ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 10,
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: ref.watch(monthlySummaryViewModelProvider).when(
-                    data: (data) {
-                      return ExpensesSummaryCard();
-                    },
-                    error: (error, stackTrace) => FittedBox(
-                      child: Text(
-                        "Err",
-                        textHeightBehavior: TextHeightBehavior(
-                          applyHeightToFirstAscent: false,
-                          applyHeightToLastDescent: false,
-                        ),
-                        style: TextStyle(
-                          fontSize: 29,
-                          color: ColorsConfig.textColor4,
-                          fontFamily: GoogleFonts.inter().fontFamily,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    loading: () => cardLoader(context),
-                  ),
-            ),
-            SliverToBoxAdapter(
-              child: const SizedBox(
-                height: 10,
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: ref.watch(dailySummaryGraphViewModelProvider).when(
-                    data: (data) => DailySummaryGraphCard(),
-                    error: (error, _) => Text(
-                      'Error loading data',
-                      style: Theme.of(context).textTheme.bodyMedium,
-                    ),
-                    loading: () => cardLoader(context),
-                  ),
-            ),
-            SliverToBoxAdapter(
-              child: const SizedBox(
-                height: 10,
-              ),
-            ),
-            DashboardUncategorizedTransactionsList(
-              isLoading: isUncategorizedTransactionsListLoading,
-              showTransactionDetailsBottomSheet: _showEditExpenseBottomSheet,
-            ),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: AppUtils.getNavbarHeight(context) * 2,
-              ),
-            ),
-          ],
+        style: ElevatedButton.styleFrom(
+          padding: EdgeInsets.all(0),
+          backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.9),
+        ),
+        containerPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
+        containerStyle: BoxDecoration(
+          color: ColorsConfig.bgColor1,
+          border: Border.all(
+            color: ColorsConfig.color4,
+            width: 1,
+            style: BorderStyle.solid,
+          ),
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
-      Positioned(
-        width: 167,
-        bottom: AppUtils.getNavbarHeight(context) + 10,
-        left: (MediaQuery.of(context).size.width / 2) - 100,
-        child: CustomButton(
-          onPressed: () async {
-            final newTransaction = await _showAddExpenseBottomSheet(
-              'Add Expense',
-            );
+    );
+  }
+}
 
-            if (newTransaction != null) {
-              await ref
-                  .read(dashboardUncategorizedTransactionsListViewModelProvider
-                      .notifier)
-                  .addNewTransaction(newTransaction);
-
-              await ref
-                  .read(monthlySummaryViewModelProvider.notifier)
-                  .addNewTransaction(newTransaction);
-
-              await ref
-                  .read(dailySummaryGraphViewModelProvider.notifier)
-                  .addNewTransaction(newTransaction);
-            }
-          },
-          isLoading: false,
-          buttonText: 'Add Expense',
-          prefixIcon: Icon(
-            Icons.add_rounded,
-            color: ColorsConfig.textColor2,
-            size: 12,
-          ),
-          containerHeight: 50,
-          containerWidth: 130,
-          textStyle: Theme.of(context).textTheme.labelMedium!.copyWith(
-                color: ColorsConfig.textColor2,
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
+class _ScrollToTopButton extends StatelessWidget {
+  final bool show;
+  final ScrollController scrollController;
+  const _ScrollToTopButton(
+      {required this.show, required this.scrollController});
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _ScrollToTopButton build <<<');
+    return Positioned(
+      bottom: AppUtils.getNavbarHeight(context) + 10,
+      left: MediaQuery.of(context).size.width - 80,
+      child: show
+          ? IconButton(
+              style: IconButton.styleFrom(
+                backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.5),
+                padding: EdgeInsets.all(10),
+                shape: CircleBorder(),
               ),
-          style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.all(0),
-            backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.9),
-          ),
-          containerPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 0),
-          containerStyle: BoxDecoration(
-            color: ColorsConfig.bgColor1,
-            border: Border.all(
-              color: ColorsConfig.color4,
-              width: 1,
-              style: BorderStyle.solid,
-            ),
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-      ),
-      // Scroll to top button
-
-      Positioned(
-        bottom: AppUtils.getNavbarHeight(context) + 10,
-        left: MediaQuery.of(context).size.width - 80,
-        child: showScrollToTopButton
-            ? IconButton(
-                style: IconButton.styleFrom(
-                  backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.5),
-                  padding: EdgeInsets.all(10),
-                  shape: CircleBorder(),
-                ),
-                onPressed: () async {
-                  await _scrollController.animateTo(
-                    0,
-                    duration: Duration(milliseconds: 300),
-                    curve: Curves.easeInOut,
-                  );
-                },
-                icon: const Icon(
-                  Icons.arrow_upward_rounded,
-                  size: 24,
-                  color: ColorsConfig.textColor3,
-                ),
-              )
-            : SizedBox.shrink(),
-      ),
-    ]);
+              onPressed: () async {
+                await scrollController.animateTo(
+                  0,
+                  duration: Duration(milliseconds: 300),
+                  curve: Curves.easeInOut,
+                );
+              },
+              icon: const Icon(
+                Icons.arrow_upward_rounded,
+                size: 24,
+                color: ColorsConfig.textColor3,
+              ),
+            )
+          : SizedBox.shrink(),
+    );
   }
 }

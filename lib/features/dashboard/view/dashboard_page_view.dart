@@ -16,6 +16,7 @@ class DashboardPageView extends ConsumerStatefulWidget {
 
 class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
   bool hasInternet = false;
+  bool isCheckingConnectivity = true;
   StreamSubscription<bool>? _connectivitySubscription;
 
   @override
@@ -31,6 +32,7 @@ class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
     if (mounted) {
       setState(() {
         hasInternet = initialConnectivity;
+        isCheckingConnectivity = false;
       });
     }
 
@@ -76,6 +78,24 @@ class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
 
   @override
   Widget build(BuildContext context) {
+    return _DashboardLayout(
+      hasInternet: hasInternet,
+      isCheckingConnectivity: isCheckingConnectivity,
+    );
+  }
+}
+
+class _DashboardLayout extends StatelessWidget {
+  final bool hasInternet;
+  final bool isCheckingConnectivity;
+
+  const _DashboardLayout({
+    required this.hasInternet,
+    required this.isCheckingConnectivity,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 600;
@@ -91,29 +111,85 @@ class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 16.0 : constraints.maxWidth * 0.2,
               ),
-              child: hasInternet
-                  ? WithTransactionsDashboardView()
-                  : const Center(
-                      child: Text(
-                        'No internet connection. Please check your network settings.',
-                        style: TextStyle(color: ColorsConfig.textColor3),
-                      ),
-                    ),
-
-              // uncategorizedTransactionsState.when(
-              //   data: (data) {
-              //     if ((data?.meta.totalCount ?? 0) == 0) {
-              //       return NoTransactionsWidget();
-              //     }
-              //     return WithTransactionsDashboardView();
-              //   },
-              //   loading: () => WithTransactionsDashboardView(),
-              //   error: (error, stack) => Center(child: Text('Error: $error')),
-              // ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: _buildContent(),
+              ),
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildContent() {
+    if (isCheckingConnectivity) {
+      return const _LoadingWidget();
+    }
+
+    return hasInternet
+        ? const WithTransactionsDashboardView()
+        : const _NoInternetWidget();
+  }
+}
+
+class _NoInternetWidget extends StatelessWidget {
+  const _NoInternetWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.wifi_off,
+            size: 64,
+            color: ColorsConfig.textColor3,
+          ),
+          SizedBox(height: 16),
+          Text(
+            'No internet connection',
+            style: TextStyle(
+              color: ColorsConfig.textColor3,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Please check your network settings.',
+            style: TextStyle(
+              color: ColorsConfig.textColor3,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoadingWidget extends StatelessWidget {
+  const _LoadingWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 16),
+          Text(
+            'Checking connectivity...',
+            style: TextStyle(
+              color: ColorsConfig.textColor3,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
