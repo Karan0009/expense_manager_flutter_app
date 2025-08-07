@@ -936,9 +936,11 @@ class _WithTransactionsDashboardViewState
           showEditExpenseBottomSheet: _showEditExpenseBottomSheet,
           cardLoader: cardLoader,
         ),
-        _AddExpenseButton(
-          showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
-          ref: ref,
+        Builder(
+          builder: (context) => _AddExpenseButton(
+            showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
+            ref: ref,
+          ),
         ),
         _ScrollToTopButton(
           show: showScrollToTopButton,
@@ -982,9 +984,9 @@ class _DashboardMainContent extends ConsumerWidget {
         slivers: [
           const _DashboardTitle(),
           const _DashboardSpacer(height: 10),
-          _DashboardExpensesSummary(cardLoader: cardLoader),
+          const _DashboardExpensesSummary(),
           const _DashboardSpacer(height: 10),
-          _DashboardDailySummaryGraph(cardLoader: cardLoader),
+          const _DashboardDailySummaryGraph(),
           const _DashboardSpacer(height: 10),
           DashboardUncategorizedTransactionsList(
             isLoading: isUncategorizedTransactionsListLoading,
@@ -1027,52 +1029,96 @@ class _DashboardSpacer extends StatelessWidget {
   }
 }
 
-class _DashboardExpensesSummary extends ConsumerWidget {
-  final Widget Function(BuildContext) cardLoader;
-  const _DashboardExpensesSummary({required this.cardLoader});
+class _DashboardExpensesSummary extends StatelessWidget {
+  const _DashboardExpensesSummary();
+
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     debugPrint('>>> _DashboardExpensesSummary build <<<');
-    return SliverToBoxAdapter(
-      child: ref.watch(monthlySummaryViewModelProvider).when(
-            data: (data) => const ExpensesSummaryCard(),
-            error: (error, stackTrace) => FittedBox(
-              child: Text(
-                "Err",
-                textHeightBehavior: TextHeightBehavior(
-                  applyHeightToFirstAscent: false,
-                  applyHeightToLastDescent: false,
-                ),
-                style: TextStyle(
-                  fontSize: 29,
-                  color: ColorsConfig.textColor4,
-                  fontFamily: GoogleFonts.inter().fontFamily,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            loading: () => cardLoader(context),
-          ),
+    return const SliverToBoxAdapter(
+      child: _DashboardExpensesSummaryContent(),
     );
   }
 }
 
-class _DashboardDailySummaryGraph extends ConsumerWidget {
-  final Widget Function(BuildContext) cardLoader;
-  const _DashboardDailySummaryGraph({required this.cardLoader});
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    debugPrint('>>> _DashboardDailySummaryGraph build <<<');
-    return SliverToBoxAdapter(
-      child: ref.watch(dailySummaryGraphViewModelProvider).when(
-            data: (data) => const DailySummaryGraphCard(),
-            error: (error, _) => Text(
-              'Error loading data',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            loading: () => cardLoader(context),
+class _DashboardExpensesSummaryContent extends ConsumerWidget {
+  const _DashboardExpensesSummaryContent();
+
+  Widget _cardLoader(BuildContext context) {
+    return SkeletonLoader(
+      width: double.infinity,
+      height: 220,
+      baseColor: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(16),
+      highlightColor: Theme.of(context).cardColor.withValues(
+            alpha: 2.5,
           ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _DashboardExpensesSummaryContent build <<<');
+    return ref.watch(monthlySummaryViewModelProvider).when(
+          data: (data) => const ExpensesSummaryCard(),
+          error: (error, stackTrace) => FittedBox(
+            child: Text(
+              "Err",
+              textHeightBehavior: TextHeightBehavior(
+                applyHeightToFirstAscent: false,
+                applyHeightToLastDescent: false,
+              ),
+              style: TextStyle(
+                fontSize: 29,
+                color: ColorsConfig.textColor4,
+                fontFamily: GoogleFonts.inter().fontFamily,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+          loading: () => _cardLoader(context),
+        );
+  }
+}
+
+class _DashboardDailySummaryGraph extends StatelessWidget {
+  const _DashboardDailySummaryGraph();
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _DashboardDailySummaryGraph build <<<');
+    return const SliverToBoxAdapter(
+      child: _DashboardDailySummaryGraphContent(),
+    );
+  }
+}
+
+class _DashboardDailySummaryGraphContent extends ConsumerWidget {
+  const _DashboardDailySummaryGraphContent();
+
+  Widget _cardLoader(BuildContext context) {
+    return SkeletonLoader(
+      width: double.infinity,
+      height: 220,
+      baseColor: Theme.of(context).cardColor,
+      borderRadius: BorderRadius.circular(16),
+      highlightColor: Theme.of(context).cardColor.withValues(
+            alpha: 2.5,
+          ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _DashboardDailySummaryGraphContent build <<<');
+    return ref.watch(dailySummaryGraphViewModelProvider).when(
+          data: (data) => const DailySummaryGraphCard(),
+          error: (error, _) => Text(
+            'Error loading data',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          loading: () => _cardLoader(context),
+        );
   }
 }
 
