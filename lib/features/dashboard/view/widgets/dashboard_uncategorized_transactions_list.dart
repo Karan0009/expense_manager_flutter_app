@@ -7,171 +7,178 @@ import 'package:expense_manager/features/dashboard/viewmodel/dashboard_uncategor
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardUncategorizedTransactionsList extends ConsumerStatefulWidget {
-  final Future<Map<String, dynamic>?> Function(String, UserTransaction?)
-      showTransactionDetailsBottomSheet;
-  final bool isLoading;
-  const DashboardUncategorizedTransactionsList({
-    super.key,
-    required this.showTransactionDetailsBottomSheet,
-    this.isLoading = false,
-  });
+// Provider for pagination loading state
+final paginationLoadingProvider = StateProvider<bool>((ref) => false);
 
-  @override
-  ConsumerState<DashboardUncategorizedTransactionsList> createState() =>
-      _DashboardUncategorizedTransactionsListState();
-}
+// Provider for transaction details callback
+final transactionDetailsCallbackProvider =
+    Provider<Future<Map<String, dynamic>?> Function(String, UserTransaction?)?>(
+        (ref) => null);
 
-class _DashboardUncategorizedTransactionsListState
-    extends ConsumerState<DashboardUncategorizedTransactionsList> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
+class DashboardUncategorizedTransactionsList extends StatelessWidget {
+  const DashboardUncategorizedTransactionsList({super.key});
 
   @override
   Widget build(BuildContext context) {
-    // todo: fix this
+    debugPrint('>>> DashboardUncategorizedTransactionsList build <<<');
     return SliverMainAxisGroup(
       slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Transactions',
-                  style: Theme.of(context).textTheme.headlineMedium,
-                ),
-                ref
-                    .watch(
-                        dashboardUncategorizedTransactionsListViewModelProvider)
-                    .when(
-                      data: (data) => Row(
-                        children: [
-                          Text(
-                            "${data?.meta.totalCount.toString() ?? '0'} Pending",
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyMedium!
-                                .copyWith(
-                                  fontWeight: FontWeight.w400,
-                                ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          RadialStepCounter(
-                            current: 10,
-                            total: 100,
-                            diameter: 22,
-                          ),
-                        ],
-                      ),
-                      error: (error, stackTrace) => Text(
-                        'Error loading transactions',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      loading: () => SkeletonLoader(
-                        width: 100,
-                        height: 50,
-                        baseColor: Theme.of(context).cardColor,
-                        borderRadius: BorderRadius.circular(16),
-                        highlightColor: Theme.of(context).cardColor.withValues(
-                              alpha: 2.5,
-                            ),
-                      ),
-                    ),
-              ],
-            ),
-          ),
-        ),
-        ref.watch(dashboardUncategorizedTransactionsListViewModelProvider).when(
-              data: (data) => SliverMainAxisGroup(
-                slivers: [
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        return DashboardTransactionCard(
-                          transaction: data?.uncategorizedTransactions[index],
-                          showTransactionDetailsBottomSheet:
-                              widget.showTransactionDetailsBottomSheet,
-                        );
-                      },
-                      childCount: data?.uncategorizedTransactions.length ?? 0,
-                    ),
-                  ),
-                  if (widget.isLoading)
-                    SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 35,
-                        width: 35,
-                        child: Loader(),
-                      ),
-                    ),
-                  SliverToBoxAdapter(
-                    child: SizedBox(
-                      height: 30,
-                    ),
-                  ),
-                ],
+        const _TransactionsHeader(),
+        const _TransactionsContent(),
+      ],
+    );
+  }
+}
+
+class _TransactionsHeader extends ConsumerWidget {
+  const _TransactionsHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _TransactionsHeader build <<<');
+    return SliverToBoxAdapter(
+      child: RepaintBoundary(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Transactions',
+                style: Theme.of(context).textTheme.headlineMedium,
               ),
-              error: (error, stackTrace) => SliverToBoxAdapter(
-                child: Text(
-                  'Error Loading transaction',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-              ),
-              loading: () {
-                return SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 400,
-                    width: double.infinity,
-                    child: Column(
+              ref
+                  .watch(
+                      dashboardUncategorizedTransactionsListViewModelProvider)
+                  .when(
+                    data: (data) => Row(
                       children: [
-                        SkeletonLoader(
-                          width: double.infinity,
-                          height: 100,
-                          baseColor: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          highlightColor:
-                              Theme.of(context).cardColor.withValues(
-                                    alpha: 2.5,
+                        Text(
+                          "${data?.meta.totalCount.toString() ?? '0'} Pending",
+                          style:
+                              Theme.of(context).textTheme.bodyMedium!.copyWith(
+                                    fontWeight: FontWeight.w400,
                                   ),
                         ),
-                        SkeletonLoader(
-                          width: double.infinity,
-                          height: 100,
-                          baseColor: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          highlightColor:
-                              Theme.of(context).cardColor.withValues(
-                                    alpha: 2.5,
-                                  ),
+                        SizedBox(
+                          width: 10,
                         ),
-                        SkeletonLoader(
-                          width: double.infinity,
-                          height: 100,
-                          baseColor: Theme.of(context).cardColor,
-                          borderRadius: BorderRadius.circular(16),
-                          highlightColor:
-                              Theme.of(context).cardColor.withValues(
-                                    alpha: 2.5,
-                                  ),
+                        RadialStepCounter(
+                          current: 10,
+                          total: 100,
+                          diameter: 22,
                         ),
                       ],
                     ),
+                    error: (error, stackTrace) => Text(
+                      'Error loading transactions',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                    loading: () => SkeletonLoader(
+                      width: 100,
+                      height: 50,
+                      baseColor: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      highlightColor: Theme.of(context).cardColor.withValues(
+                            alpha: 2.5,
+                          ),
+                    ),
                   ),
-                );
-              },
-            ),
-      ],
+            ],
+          ),
+        ),
+      ),
     );
+  }
+}
+
+class _TransactionsContent extends ConsumerWidget {
+  const _TransactionsContent();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _TransactionsContent build <<<');
+
+    final isLoading = ref.watch(paginationLoadingProvider);
+    final callback = ref.watch(transactionDetailsCallbackProvider);
+
+    return ref
+        .watch(dashboardUncategorizedTransactionsListViewModelProvider)
+        .when(
+          data: (data) => SliverMainAxisGroup(
+            slivers: [
+              SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    return DashboardTransactionCard(
+                      transaction: data?.uncategorizedTransactions[index],
+                      showTransactionDetailsBottomSheet:
+                          callback ?? (_, __) => Future.value(null),
+                    );
+                  },
+                  childCount: data?.uncategorizedTransactions.length ?? 0,
+                ),
+              ),
+              if (isLoading)
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 35,
+                    width: 35,
+                    child: Loader(),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: 30,
+                ),
+              ),
+            ],
+          ),
+          error: (error, stackTrace) => SliverToBoxAdapter(
+            child: Text(
+              'Error Loading transaction',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ),
+          loading: () {
+            return SliverToBoxAdapter(
+              child: SizedBox(
+                height: 400,
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    SkeletonLoader(
+                      width: double.infinity,
+                      height: 100,
+                      baseColor: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      highlightColor: Theme.of(context).cardColor.withValues(
+                            alpha: 2.5,
+                          ),
+                    ),
+                    SkeletonLoader(
+                      width: double.infinity,
+                      height: 100,
+                      baseColor: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      highlightColor: Theme.of(context).cardColor.withValues(
+                            alpha: 2.5,
+                          ),
+                    ),
+                    SkeletonLoader(
+                      width: double.infinity,
+                      height: 100,
+                      baseColor: Theme.of(context).cardColor,
+                      borderRadius: BorderRadius.circular(16),
+                      highlightColor: Theme.of(context).cardColor.withValues(
+                            alpha: 2.5,
+                          ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
   }
 }

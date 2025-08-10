@@ -910,61 +910,46 @@ class _WithTransactionsDashboardViewState
     return result;
   }
 
-  Widget cardLoader(BuildContext context) {
-    return SkeletonLoader(
-      width: double.infinity,
-      height: 220,
-      baseColor: Theme.of(context).cardColor,
-      borderRadius: BorderRadius.circular(16),
-      highlightColor: Theme.of(context).cardColor.withValues(
-            alpha: 2.5,
-          ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     debugPrint('============================');
     debugPrint('WithTransactionsDashboardView build');
     debugPrint('============================');
-    return Stack(
-      children: [
-        _DashboardMainContent(
-          scrollController: _scrollController,
-          isUncategorizedTransactionsListLoading:
-              isUncategorizedTransactionsListLoading,
-          showEditExpenseBottomSheet: _showEditExpenseBottomSheet,
-          cardLoader: cardLoader,
-        ),
-        Builder(
-          builder: (context) => _AddExpenseButton(
-            showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
-            ref: ref,
-          ),
-        ),
-        _ScrollToTopButton(
-          show: showScrollToTopButton,
-          scrollController: _scrollController,
+    return ProviderScope(
+      overrides: [
+        paginationLoadingProvider
+            .overrideWith((ref) => isUncategorizedTransactionsListLoading),
+        transactionDetailsCallbackProvider.overrideWith(
+          (ref) => _showEditExpenseBottomSheet,
         ),
       ],
+      child: Stack(
+        children: [
+          _DashboardMainContent(
+            scrollController: _scrollController,
+          ),
+          Builder(
+            builder: (context) => _AddExpenseButton(
+              showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
+              ref: ref,
+            ),
+          ),
+          _ScrollToTopButton(
+            show: showScrollToTopButton,
+            scrollController: _scrollController,
+          ),
+        ],
+      ),
     );
   }
-// ...existing code...
 }
 
 // --- Extracted widgets moved to top-level ---
 
 class _DashboardMainContent extends ConsumerWidget {
   final ScrollController scrollController;
-  final bool isUncategorizedTransactionsListLoading;
-  final Future<Map<String, dynamic>?> Function(String, UserTransaction?)
-      showEditExpenseBottomSheet;
-  final Widget Function(BuildContext) cardLoader;
   const _DashboardMainContent({
     required this.scrollController,
-    required this.isUncategorizedTransactionsListLoading,
-    required this.showEditExpenseBottomSheet,
-    required this.cardLoader,
   });
 
   @override
@@ -988,10 +973,7 @@ class _DashboardMainContent extends ConsumerWidget {
           const _DashboardSpacer(height: 10),
           const _DashboardDailySummaryGraph(),
           const _DashboardSpacer(height: 10),
-          DashboardUncategorizedTransactionsList(
-            isLoading: isUncategorizedTransactionsListLoading,
-            showTransactionDetailsBottomSheet: showEditExpenseBottomSheet,
-          ),
+          const DashboardUncategorizedTransactionsList(),
           SliverToBoxAdapter(
             child: SizedBox(
               height: AppUtils.getNavbarHeight(context) * 2,

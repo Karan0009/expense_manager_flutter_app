@@ -104,6 +104,7 @@ class SplashScreenView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final tokenState = ref.watch(splashScreenViewModelProvider);
+
     return tokenState.when(
       data: (token) {
         WidgetsBinding.instance.addPostFrameCallback((_) async {
