@@ -36,6 +36,11 @@ class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
       });
     }
 
+    if (initialConnectivity) {
+      // Auto-sync pending transactions if internet is available
+      _syncPendingTransactions();
+    }
+
     // Listen to connectivity changes
     _connectivitySubscription = ConnectivityService()
         .connectivityStream
@@ -60,9 +65,7 @@ class _DashboardPageViewState extends ConsumerState<DashboardPageView> {
 
       for (int i = 0; i < pendingRawTransactions.length; i++) {
         final transaction = pendingRawTransactions[i];
-        await ref
-            .read(rawTransactionLocalRepositoryProvider)
-            .sync(transaction['id']);
+        ref.read(rawTransactionLocalRepositoryProvider).sync(transaction['id']);
       }
     } catch (e) {
       // Handle sync errors silently or show notification

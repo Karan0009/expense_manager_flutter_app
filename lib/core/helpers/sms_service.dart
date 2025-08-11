@@ -2,9 +2,11 @@ import 'dart:developer';
 
 import 'package:another_telephony/telephony.dart';
 import 'package:expense_manager/config/app_config.dart';
+import 'package:expense_manager/core/helpers/connectivity_service.dart';
 import 'package:expense_manager/core/http/rest_client.dart';
 import 'package:expense_manager/data/repositories/auth/auth_local_repository.dart';
 import 'package:expense_manager/data/repositories/raw_transaction/raw_transaction_local_repository.dart';
+import 'package:expense_manager/data/repositories/raw_transaction/raw_transaction_remote_repository.dart';
 
 @pragma('vm:entry-point')
 Future<void> backgroundMessageHandler(SmsMessage message) async {
@@ -13,15 +15,43 @@ Future<void> backgroundMessageHandler(SmsMessage message) async {
 
   log("📨 Incoming SMS from: $sender");
   if (sender != null && AppConfig.allowedSmsHeaders.contains(sender)) {
-    log("✅ Sender matched. Reading SMS.");
-    await RawTransactionLocalRepository(
-      restClient: RestClient(authLocalRepository: AuthLocalRepository()),
-    ).create(
-      type: AppConfig.rawTransactionTypeSMS,
-      data: body,
-    );
+    log("✅ Sender matched. Processing SMS.");
+
+    // Check connectivity and sync if online
+    final connectivityService = ConnectivityService();
+    final isOnline = await connectivityService.hasInternetConnection();
+
+    if (isOnline) {
+      log("🌐 Device is online. Syncing pending transactions.");
+      _syncTransaction(
+        type: AppConfig.rawTransactionTypeSMS,
+        data: body,
+      );
+    } else {
+      log("📱 Device is offline. Transaction saved locally for later sync.");
+      RawTransactionLocalRepository(
+        restClient: RestClient(authLocalRepository: AuthLocalRepository()),
+      ).create(
+        type: AppConfig.rawTransactionTypeSMS,
+        data: body,
+      );
+    }
   } else {
     log("🚫 Sender not allowed. Ignored.");
+  }
+}
+
+Future<void> _syncTransaction(
+    {required String type, required String data}) async {
+  try {
+    final repository = RawTransactionRemoteRepository(
+      restClient: RestClient(authLocalRepository: AuthLocalRepository()),
+    );
+
+    await repository.create(data: data, type: type);
+  } catch (e) {
+    // Handle sync errors silently or show notification
+    log("❌ Auto-sync failed: $e");
   }
 }
 

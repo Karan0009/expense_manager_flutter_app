@@ -28,7 +28,7 @@ class AppConfig {
 
   static const String rawTransactionTypeWAText = 'WA_TEXT';
   static const String rawTransactionTypeWAImage = 'WA_IMAGE';
-  static const String rawTransactionTypeSMS = 'SMS';
+  static const String rawTransactionTypeSMS = 'SMS_READ';
 
   static const String rawTransactionsLocalTable = 'raw_transactions';
 

@@ -52,7 +52,6 @@ class _WithTransactionsDashboardViewState
   bool showAddExpenseLoading = false;
   bool isDeleteButtonLoading = false;
   bool isEditButtonLoading = false;
-  bool isUncategorizedTransactionsListLoading = false;
   bool showScrollToTopButton = false;
   bool showDeleteTrxnonTapMessage = false;
 
@@ -93,10 +92,6 @@ class _WithTransactionsDashboardViewState
             .read(dashboardUncategorizedTransactionsListViewModelProvider
                 .notifier)
             .loadMoreTransactions();
-
-        // setState(() {
-        //   isUncategorizedTransactionsListLoading = false;
-        // });
       }
 
       if (mounted &&

@@ -35,7 +35,8 @@ class RawTransactionRemoteRepository {
         'type': type,
       };
 
-      if (type == AppConfig.rawTransactionTypeWAText) {
+      if (type == AppConfig.rawTransactionTypeWAText ||
+          type == AppConfig.rawTransactionTypeSMS) {
         params['data'] = data.toString();
       } else if (type == AppConfig.rawTransactionTypeWAImage) {
         final file = File(data);
