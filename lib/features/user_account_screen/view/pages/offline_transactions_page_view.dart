@@ -35,10 +35,7 @@ class _OfflineTransactionsPageViewState
 
   @override
   Widget build(BuildContext context) {
-    final asyncTxns = ref.watch(rawTransactionLocalViewModelProvider);
-    final vm = ref.watch(rawTransactionLocalViewModelProvider.notifier);
-    final syncingIds = vm.syncingIds;
-
+    debugPrint('🔄 OfflineTransactionsPageView build');
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -50,153 +47,48 @@ class _OfflineTransactionsPageViewState
         forceMaterialTransparency: true,
         foregroundColor: ColorsConfig.textColor1,
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return GestureDetector(
-            onTap: () => FocusScope.of(context).unfocus(),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxHeight: constraints.maxHeight,
-                maxWidth: constraints.maxWidth,
-              ),
-              child: asyncTxns.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
-                  error: (err, _) => Center(child: Text('❌ Error: $err')),
-                  data: (transactions) {
-                    if (transactions.isEmpty) {
-                      return const Center(
-                          child: Text('No offline transactions found.'));
-                    }
+      body: RepaintBoundary(
+        child: GestureDetector(
+          onTap: () => FocusScope.of(context).unfocus(),
+          child: Consumer(
+            builder: (context, ref, _) {
+              final asyncTxns = ref.watch(rawTransactionLocalViewModelProvider);
+              return asyncTxns.when(
+                loading: () => const Center(child: CircularProgressIndicator()),
+                error: (err, _) => Center(child: Text('❌ Error: $err')),
+                data: (transactions) {
+                  if (transactions.isEmpty) {
+                    return const Center(
+                        child: Text('No offline transactions found.'));
+                  }
 
-                    return ListView.separated(
-                      padding: const EdgeInsets.only(bottom: 60),
-                      itemCount: transactions.length,
-                      separatorBuilder: (_, __) => const Divider(),
-                      itemBuilder: (context, index) {
-                        final tx = transactions[index];
-
-                        final parsedData = jsonDecode(tx['data']) ?? {};
-
-                        return ListTile(
-                          onTap: () =>
-                              _showTransactionDetails(context, tx, parsedData),
-                          title: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                "Data: ${parsedData['data'] ?? ''}",
-                                style: Theme.of(context).textTheme.bodySmall,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                "Type: ${parsedData['type'] ?? ''}",
-                                style: Theme.of(context).textTheme.bodySmall,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                'status: ${tx['status']}',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                              Text(
-                                tx['created_at'] ?? '',
-                                style: Theme.of(context).textTheme.bodySmall,
-                              ),
-                            ],
-                          ),
-                          trailing: SizedBox(
-                              width:
-                                  190, // Constrain the width to fit both buttons
-                              child: Row(
-                                children: [
-                                  CustomButton(
-                                    isLoading: syncingIds.contains(tx['id']),
-                                    buttonText: 'Remove',
-                                    onPressed: () async {
-                                      await ref
-                                          .read(
-                                              rawTransactionLocalViewModelProvider
-                                                  .notifier)
-                                          .deleteTransaction(tx['id']);
-                                    },
-                                    containerWidth: 90,
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium!
-                                        .copyWith(
-                                          color: ColorsConfig.color4,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.all(0),
-                                      backgroundColor: ColorsConfig.bgColor1
-                                          .withValues(alpha: 0.9),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.delete_forever,
-                                      color: ColorsConfig.textColor1,
-                                      size: 16,
-                                    ),
-                                    containerStyle: BoxDecoration(
-                                      border: Border.all(
-                                        color: ColorsConfig.textColor1,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                  CustomButton(
-                                    isLoading: syncingIds.contains(tx['id']),
-                                    buttonText: 'Sync',
-                                    onPressed: () async {
-                                      await ref
-                                          .read(
-                                              rawTransactionLocalViewModelProvider
-                                                  .notifier)
-                                          .syncTransaction(tx['id']);
-                                    },
-                                    containerWidth: 90,
-                                    textStyle: Theme.of(context)
-                                        .textTheme
-                                        .labelMedium!
-                                        .copyWith(
-                                          color: ColorsConfig.color4,
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                    style: ElevatedButton.styleFrom(
-                                      padding: EdgeInsets.all(0),
-                                      backgroundColor: ColorsConfig.bgColor1
-                                          .withValues(alpha: 0.9),
-                                    ),
-                                    prefixIcon: const Icon(
-                                      Icons.sync,
-                                      color: ColorsConfig.textColor1,
-                                      size: 16,
-                                    ),
-                                    containerStyle: BoxDecoration(
-                                      border: Border.all(
-                                        color: ColorsConfig.textColor1,
-                                        width: 1,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )),
-                        );
-                      },
-                    );
-                  }),
-            ),
-          );
-        },
+                  return ListView.separated(
+                    controller: _scrollController,
+                    padding: const EdgeInsets.only(bottom: 60),
+                    itemCount: transactions.length,
+                    separatorBuilder: (_, __) => const Divider(),
+                    itemBuilder: (context, index) {
+                      final tx = transactions[index];
+                      return _TransactionListItem(
+                        transaction: tx,
+                        onTap: _showTransactionDetails,
+                        key: ValueKey(tx['id']),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+        ),
       ),
     );
   }
 
-  // Add this method to your _OfflineTransactionsPageViewState class
-  void _showTransactionDetails(BuildContext context, Map<String, dynamic> tx,
-      Map<String, dynamic> parsedData) {
+  // Optimized method signature to avoid parsing in build
+  void _showTransactionDetails(BuildContext context, Map<String, dynamic> tx) {
+    final parsedData = jsonDecode(tx['data']) ?? {};
+
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -238,8 +130,7 @@ class _OfflineTransactionsPageViewState
                     ),
                   ),
                   child: Text(
-                    jsonDecode(tx['data'])['data']?.toString() ??
-                        'No data available',
+                    parsedData['data']?.toString() ?? 'No data available',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontFamily: 'monospace',
                         ),
@@ -283,6 +174,162 @@ class _OfflineTransactionsPageViewState
               value,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// Optimized transaction list item widget with cached parsing
+class _TransactionListItem extends ConsumerWidget {
+  final Map<String, dynamic> transaction;
+  final Function(BuildContext, Map<String, dynamic>) onTap;
+
+  const _TransactionListItem({
+    required this.transaction,
+    required this.onTap,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint(
+        '>>> _TransactionListItem build for ID: ${transaction['id']} <<<');
+
+    // Parse JSON only once per build
+    final parsedData = jsonDecode(transaction['data']) ?? {};
+    final vm = ref.watch(rawTransactionLocalViewModelProvider.notifier);
+    final syncingIds = vm.syncingIds;
+    final transactionId = transaction['id'];
+
+    return RepaintBoundary(
+      child: ListTile(
+        onTap: () => onTap(context, transaction),
+        title: _TransactionDetails(
+          parsedData: parsedData,
+          transaction: transaction,
+        ),
+        trailing: _TransactionActions(
+          transactionId: transactionId,
+          isLoading: syncingIds.contains(transactionId),
+        ),
+      ),
+    );
+  }
+}
+
+// Extracted widget for transaction details to avoid rebuilds
+class _TransactionDetails extends StatelessWidget {
+  final Map<String, dynamic> parsedData;
+  final Map<String, dynamic> transaction;
+
+  const _TransactionDetails({
+    required this.parsedData,
+    required this.transaction,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _TransactionDetails build <<<');
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          "Data: ${parsedData['data'] ?? ''}",
+          style: Theme.of(context).textTheme.bodySmall,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          "Type: ${parsedData['type'] ?? ''}",
+          style: Theme.of(context).textTheme.bodySmall,
+          overflow: TextOverflow.ellipsis,
+        ),
+        Text(
+          'Status: ${transaction['status']}',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+        Text(
+          transaction['created_at'] ?? '',
+          style: Theme.of(context).textTheme.bodySmall,
+        ),
+      ],
+    );
+  }
+}
+
+// Extracted widget for action buttons with optimized style
+class _TransactionActions extends ConsumerWidget {
+  final dynamic transactionId;
+  final bool isLoading;
+
+  const _TransactionActions({
+    required this.transactionId,
+    required this.isLoading,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _TransactionActions build for ID: $transactionId <<<');
+
+    // Cache expensive style calculations
+    final buttonTextStyle = Theme.of(context).textTheme.labelMedium!.copyWith(
+          color: ColorsConfig.color4,
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+        );
+
+    final buttonStyle = ElevatedButton.styleFrom(
+      padding: const EdgeInsets.all(0),
+      backgroundColor: ColorsConfig.bgColor1.withValues(alpha: 0.9),
+    );
+
+    final containerStyle = BoxDecoration(
+      border: Border.all(
+        color: ColorsConfig.textColor1,
+        width: 1,
+      ),
+    );
+
+    return SizedBox(
+      width: 200,
+      child: Row(
+        children: [
+          CustomButton(
+            isLoading: isLoading,
+            buttonText: 'Remove',
+            onPressed: () async {
+              await ref
+                  .read(rawTransactionLocalViewModelProvider.notifier)
+                  .deleteTransaction(transactionId);
+            },
+            containerWidth: 105,
+            textStyle: buttonTextStyle,
+            style: buttonStyle,
+            prefixIcon: const Icon(
+              Icons.delete_forever,
+              color: ColorsConfig.textColor1,
+              size: 16,
+            ),
+            containerStyle: containerStyle,
+          ),
+          CustomButton(
+            isLoading: isLoading,
+            buttonText: 'Sync',
+            onPressed: () async {
+              await ref
+                  .read(rawTransactionLocalViewModelProvider.notifier)
+                  .syncTransaction(transactionId);
+            },
+            containerWidth: 90,
+            textStyle: buttonTextStyle,
+            style: buttonStyle,
+            prefixIcon: const Icon(
+              Icons.sync,
+              color: ColorsConfig.textColor1,
+              size: 16,
+            ),
+            containerStyle: containerStyle,
           ),
         ],
       ),

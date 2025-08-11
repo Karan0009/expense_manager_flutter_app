@@ -17,6 +17,7 @@ class UserAccountListItem extends StatelessWidget {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
+        color: Colors.transparent,
         padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

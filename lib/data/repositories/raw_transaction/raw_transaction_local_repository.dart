@@ -12,6 +12,7 @@ import 'package:expense_manager/core/http/http_type_def.dart';
 import 'package:expense_manager/core/http/rest_client.dart';
 import 'package:expense_manager/data/models/common/api_response.dart';
 import 'package:expense_manager/data/models/transactions/raw_transaction.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -149,12 +150,10 @@ class RawTransactionLocalRepository {
               isDataList: false,
             );
 
-            // Update the local database with the new status
-            await _dbService.update(
-              AppConfig.rawTransactionsLocalTable,
-              {'status': 'SYNCED'},
-              id,
-            );
+            // Update status asynchronously without blocking
+            _updateTransactionStatus(id).catchError((e) {
+              debugPrint('Failed to update transaction status: $e');
+            });
 
             return Right(val);
           } catch (e) {
@@ -175,5 +174,14 @@ class RawTransactionLocalRepository {
         ),
       );
     }
+  }
+
+  // Helper method to update transaction status without blocking
+  Future<void> _updateTransactionStatus(int id) async {
+    await _dbService.update(
+      AppConfig.rawTransactionsLocalTable,
+      {'status': 'SYNCED'},
+      id,
+    );
   }
 }

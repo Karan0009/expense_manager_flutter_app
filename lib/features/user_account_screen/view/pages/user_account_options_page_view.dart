@@ -26,6 +26,9 @@ class UserAccountOptionsPageView extends ConsumerStatefulWidget {
 class _UserAccountOptionsPageViewState
     extends ConsumerState<UserAccountOptionsPageView> {
   final ScrollController _scrollController = ScrollController();
+
+  static void _emptyFunction() {}
+
   @override
   void initState() {
     super.initState();
@@ -63,10 +66,10 @@ class _UserAccountOptionsPageViewState
 
   @override
   Widget build(BuildContext context) {
-    print('🔄 UserAccountOptionsPageView rebuilt');
-    final state = ref.watch(userAccountViewModelProvider);
+    debugPrint('🔄 UserAccountOptionsPageView rebuilt');
     return LayoutBuilder(
       builder: (context, constraints) {
+        debugPrint('>>> UserAccountOptionsPageView LayoutBuilder build <<<');
         return ConstrainedBox(
           constraints: BoxConstraints(
             maxHeight: constraints.maxHeight,
@@ -77,179 +80,16 @@ class _UserAccountOptionsPageViewState
             child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // Avatar and Name
-                  const SizedBox(height: 16),
-                  Stack(
-                    alignment: Alignment.bottomRight,
-                    children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: ColorsConfig.color2,
-                      ),
-                      // CircleAvatar(
-                      //   radius: 16,
-                      //   backgroundColor: Colors.black,
-                      //   child: Icon(Icons.edit, color: Colors.white, size: 16),
-                      // ),
-                      Positioned(
-                        left: 63,
-                        bottom: 2,
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: ColorsConfig.color5,
-                            border: Border.all(
-                              color: ColorsConfig.color2,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(50),
-                          ),
-                          child:
-                              Icon(Icons.edit, color: Colors.white, size: 16),
-                        ),
-                      )
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Finance Guru',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  ref.watch(userAccountViewModelProvider).when(
-                      data: (user) {
-                        final date = DateTime.tryParse(user?.created_at ?? '');
-                        if (date == null) {
-                          return const Text(
-                            'Since __',
-                            style: TextStyle(color: Colors.grey),
-                          );
-                        }
-
-                        return Text(
-                          "Since ${AppUtils.formatDate(date, format: 'MMM dd, yyyy')}",
-                          style: TextStyle(color: Colors.grey),
-                        );
-                      },
-                      error: (err, _) => const Text(
-                            'Err',
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                      loading: () => SkeletonLoader(
-                            height: 20,
-                            width: 50,
-                            baseColor: Theme.of(context).cardColor,
-                            borderRadius: BorderRadius.circular(16),
-                            highlightColor:
-                                Theme.of(context).cardColor.withValues(
-                                      alpha: 2.5,
-                                    ),
-                          )),
-
+                  const _UserAvatarSection(),
+                  const _UserInfoSection(),
                   const SizedBox(height: 24),
-
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Profile',
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: ColorsConfig.textColor5,
-                          ),
-                    ),
-                  ),
-
-                  UserAccountOptionRow(
-                    icon: Icons.phone_outlined,
-                    optionName: 'Phone Number',
-                    value: state.hasValue
-                        ? "${state.value?.country_code} ${state.value?.phone_number}"
-                        : null,
-                    onPressed: () {},
-                  ),
-                  UserAccountOptionRow(
-                    icon: Icons.person_outline,
-                    optionName: 'Name',
-                    onPressed: () {},
-                  ),
-                  UserAccountOptionRow(
-                    icon: Icons.work_outline,
-                    optionName: 'Occupation',
-                    onPressed: () {},
-                  ),
-                  UserAccountOptionRow(
-                    icon: Icons.location_on_outlined,
-                    optionName: 'City',
-                    onPressed: () {},
-                  ),
-
+                  const _ProfileSectionHeader(),
+                  _ProfileOptionsSection(),
                   ...listSpacer(context),
-
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      'Offline',
-                      style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                            fontWeight: FontWeight.w600,
-                            color: ColorsConfig.textColor5,
-                          ),
-                    ),
-                  ),
-
-                  UserAccountListItem(
-                    icon: Icons.backup,
-                    optionName: 'Transactions',
-                    onPressed: () {
-                      print('Transactions pressed');
-                      context.push(
-                        OfflineTransactionsPageView.routePath,
-                      );
-                    },
-                  ),
-
+                  const _OfflineSectionHeader(),
+                  _OfflineOptionsSection(),
                   ...listSpacer(context),
-
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    spacing: 10,
-                    children: [
-                      Flexible(
-                        fit: FlexFit.tight,
-                        child: CustomButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(
-                              ColorsConfig.color5,
-                            ),
-                          ),
-                          isDisabled: false,
-                          buttonText: 'Logout',
-                          isLoading: false,
-                          onPressed: () async {
-                            await logoutHandler(AppConfig.logoutTypeSelf);
-                          },
-                        ),
-                      ),
-                      Flexible(
-                        fit: FlexFit.tight,
-                        child: CustomButton(
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStateProperty.all(
-                              ColorsConfig.color5,
-                            ),
-                          ),
-                          isDisabled: false,
-                          buttonText: 'Logout all',
-                          isLoading: false,
-                          onPressed: () async {
-                            await logoutHandler(AppConfig.logoutTypeAll);
-                          },
-                        ),
-                      )
-                    ],
-                  ),
+                  _LogoutButtonsSection(),
 
                   /// EXPENSES SECTION
                   // Align(
@@ -290,6 +130,227 @@ class _UserAccountOptionsPageViewState
           ),
         );
       },
+    );
+  }
+
+  Widget _ProfileOptionsSection() {
+    debugPrint('>>> _ProfileOptionsSection build <<<');
+    return Consumer(
+      builder: (context, ref, _) {
+        final state = ref.watch(userAccountViewModelProvider);
+        return Column(
+          children: [
+            UserAccountOptionRow(
+              icon: Icons.phone_outlined,
+              optionName: 'Phone Number',
+              value: state.hasValue
+                  ? "${state.value?.country_code} ${state.value?.phone_number}"
+                  : null,
+              onPressed: () {},
+            ),
+            UserAccountOptionRow(
+              icon: Icons.person_outline,
+              optionName: 'Name',
+              onPressed: _emptyFunction,
+            ),
+            UserAccountOptionRow(
+              icon: Icons.work_outline,
+              optionName: 'Occupation',
+              onPressed: _emptyFunction,
+            ),
+            UserAccountOptionRow(
+              icon: Icons.location_on_outlined,
+              optionName: 'City',
+              onPressed: _emptyFunction,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _OfflineOptionsSection() {
+    debugPrint('>>> _OfflineOptionsSection build <<<');
+    return UserAccountListItem(
+      icon: Icons.backup,
+      optionName: 'Transactions',
+      onPressed: () {
+        debugPrint('----------- Transactions pressed ----------');
+
+        context.push(
+          OfflineTransactionsPageView.routePath,
+        );
+      },
+    );
+  }
+
+  Widget _LogoutButtonsSection() {
+    debugPrint('>>> _LogoutButtonsSection build <<<');
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      spacing: 10,
+      children: [
+        Flexible(
+          fit: FlexFit.tight,
+          child: CustomButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                ColorsConfig.color5,
+              ),
+            ),
+            isDisabled: false,
+            buttonText: 'Logout',
+            isLoading: false,
+            onPressed: () async {
+              await logoutHandler(AppConfig.logoutTypeSelf);
+            },
+          ),
+        ),
+        Flexible(
+          fit: FlexFit.tight,
+          child: CustomButton(
+            style: ButtonStyle(
+              backgroundColor: WidgetStateProperty.all(
+                ColorsConfig.color5,
+              ),
+            ),
+            isDisabled: false,
+            buttonText: 'Logout all',
+            isLoading: false,
+            onPressed: () async {
+              await logoutHandler(AppConfig.logoutTypeAll);
+            },
+          ),
+        )
+      ],
+    );
+  }
+}
+
+// Extracted const widgets for better performance
+class _UserAvatarSection extends StatelessWidget {
+  const _UserAvatarSection();
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _UserAvatarSection build <<<');
+    return Column(
+      children: [
+        const SizedBox(height: 16),
+        Stack(
+          alignment: Alignment.bottomRight,
+          children: [
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: ColorsConfig.color2,
+            ),
+            Positioned(
+              left: 63,
+              bottom: 2,
+              child: Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: ColorsConfig.color5,
+                  border: Border.all(
+                    color: ColorsConfig.color2,
+                    width: 2,
+                  ),
+                  borderRadius: BorderRadius.circular(50),
+                ),
+                child: const Icon(Icons.edit, color: Colors.white, size: 16),
+              ),
+            )
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _UserInfoSection extends ConsumerWidget {
+  const _UserInfoSection();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    debugPrint('>>> _UserInfoSection build <<<');
+    return Column(
+      children: [
+        const SizedBox(height: 12),
+        const Text(
+          'Finance Guru',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        ref.watch(userAccountViewModelProvider).when(
+            data: (user) {
+              final date = DateTime.tryParse(user?.created_at ?? '');
+              if (date == null) {
+                return const Text(
+                  'Since __',
+                  style: TextStyle(color: Colors.grey),
+                );
+              }
+
+              return Text(
+                "Since ${AppUtils.formatDate(date, format: 'MMM dd, yyyy')}",
+                style: const TextStyle(color: Colors.grey),
+              );
+            },
+            error: (err, _) => const Text(
+                  'Err',
+                  style: TextStyle(color: Colors.grey),
+                ),
+            loading: () => SkeletonLoader(
+                  height: 20,
+                  width: 50,
+                  baseColor: Theme.of(context).cardColor,
+                  borderRadius: BorderRadius.circular(16),
+                  highlightColor: Theme.of(context).cardColor.withValues(
+                        alpha: 2.5,
+                      ),
+                )),
+      ],
+    );
+  }
+}
+
+class _ProfileSectionHeader extends StatelessWidget {
+  const _ProfileSectionHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _ProfileSectionHeader build <<<');
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Profile',
+        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+              fontWeight: FontWeight.w600,
+              color: ColorsConfig.textColor5,
+            ),
+      ),
+    );
+  }
+}
+
+class _OfflineSectionHeader extends StatelessWidget {
+  const _OfflineSectionHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    debugPrint('>>> _OfflineSectionHeader build <<<');
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Text(
+        'Offline',
+        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+              fontWeight: FontWeight.w600,
+              color: ColorsConfig.textColor5,
+            ),
+      ),
     );
   }
 }
