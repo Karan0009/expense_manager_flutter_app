@@ -1,19 +1,11 @@
 import 'package:expense_manager/core/widgets/loader.dart';
 import 'package:expense_manager/core/widgets/radial_step_counter.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
-import 'package:expense_manager/data/models/transactions/user_transaction.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/dashboard_transaction_card.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/dashboard_uncategorized_transactions_list_viewmodel/dashboard_uncategorized_transactions_list_viewmodel.dart';
+import 'package:expense_manager/features/dashboard/providers/pagination_loading_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
-// Provider for pagination loading state
-final paginationLoadingProvider = StateProvider<bool>((ref) => false);
-
-// Provider for transaction details callback
-final transactionDetailsCallbackProvider =
-    Provider<Future<Map<String, dynamic>?> Function(String, UserTransaction?)?>(
-        (ref) => null);
 
 class DashboardUncategorizedTransactionsList extends StatelessWidget {
   const DashboardUncategorizedTransactionsList({super.key});

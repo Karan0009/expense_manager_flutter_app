@@ -38,7 +38,7 @@ class SplashScreenView extends ConsumerWidget {
         return {'action': permissionNotGrantedKey};
       }
 
-      // _initSmsService(ref);
+      _initSmsService(ref);
 
       return {'action': initSuccessKey};
     } catch (error) {

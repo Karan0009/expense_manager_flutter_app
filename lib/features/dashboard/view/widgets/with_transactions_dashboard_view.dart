@@ -10,6 +10,7 @@ import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/data/models/category/main_category.dart';
 import 'package:expense_manager/data/models/category/sub_category.dart';
 import 'package:expense_manager/data/models/transactions/user_transaction.dart';
+import 'package:expense_manager/features/dashboard/providers/pagination_loading_provider.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/daily_summary_graph_card.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/expenses_summary_card.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/dashboard_uncategorized_transactions_list.dart';
@@ -62,6 +63,9 @@ class _WithTransactionsDashboardViewState
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
+      transactionDetailsCallbackProvider.overrideWith(
+        (ref) => _showEditExpenseBottomSheet,
+      );
     });
   }
 
@@ -83,18 +87,16 @@ class _WithTransactionsDashboardViewState
       //     "clients: ${_scrollController.hasClients}, Scroll position: ${_scrollController.position.pixels}, Max Scroll Extent: ${_scrollController.position.maxScrollExtent}, screen height: ${MediaQuery.of(context).size.height} ,should show up ${_scrollController.position.pixels > MediaQuery.of(context).size.height}");
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        setState(() {
-          isUncategorizedTransactionsListLoading = true;
-        });
+        paginationLoadingProvider.overrideWith((ref) => true);
 
         await ref
             .read(dashboardUncategorizedTransactionsListViewModelProvider
                 .notifier)
             .loadMoreTransactions();
 
-        setState(() {
-          isUncategorizedTransactionsListLoading = false;
-        });
+        // setState(() {
+        //   isUncategorizedTransactionsListLoading = false;
+        // });
       }
 
       if (mounted &&
@@ -915,31 +917,22 @@ class _WithTransactionsDashboardViewState
     debugPrint('============================');
     debugPrint('WithTransactionsDashboardView build');
     debugPrint('============================');
-    return ProviderScope(
-      overrides: [
-        paginationLoadingProvider
-            .overrideWith((ref) => isUncategorizedTransactionsListLoading),
-        transactionDetailsCallbackProvider.overrideWith(
-          (ref) => _showEditExpenseBottomSheet,
+    return Stack(
+      children: [
+        _DashboardMainContent(
+          scrollController: _scrollController,
+        ),
+        Builder(
+          builder: (context) => _AddExpenseButton(
+            showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
+            ref: ref,
+          ),
+        ),
+        _ScrollToTopButton(
+          show: showScrollToTopButton,
+          scrollController: _scrollController,
         ),
       ],
-      child: Stack(
-        children: [
-          _DashboardMainContent(
-            scrollController: _scrollController,
-          ),
-          Builder(
-            builder: (context) => _AddExpenseButton(
-              showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
-              ref: ref,
-            ),
-          ),
-          _ScrollToTopButton(
-            show: showScrollToTopButton,
-            scrollController: _scrollController,
-          ),
-        ],
-      ),
     );
   }
 }
