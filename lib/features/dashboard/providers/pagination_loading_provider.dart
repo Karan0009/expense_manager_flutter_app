@@ -10,3 +10,6 @@ final paginationLoadingProvider = StateProvider<bool>((ref) => false);
 final transactionDetailsCallbackProvider =
     Provider<Future<Map<String, dynamic>?> Function(String, UserTransaction?)?>(
         (ref) => null);
+final showAddExpenseBottomSheetHandlerProvider =
+    Provider<Future<UserTransaction?> Function(String buttonLabel)?>(
+        (ref) => null);

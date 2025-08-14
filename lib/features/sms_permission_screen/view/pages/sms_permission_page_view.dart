@@ -1,5 +1,4 @@
 import 'dart:developer';
-
 import 'package:expense_manager/config/app_config.dart';
 import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/permission_service.dart';
@@ -71,7 +70,7 @@ class SmsPermissionPageView extends StatelessWidget {
             children: [
               const SizedBox(height: 24),
               Text(
-                'Automatically add expenses',
+                'Automatically add expenses, even in the background (If you allow)',
                 style: Theme.of(context).textTheme.displayLarge,
                 textAlign: TextAlign.center,
               ),

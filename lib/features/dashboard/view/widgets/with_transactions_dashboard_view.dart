@@ -54,6 +54,7 @@ class _WithTransactionsDashboardViewState
   bool isEditButtonLoading = false;
   bool showScrollToTopButton = false;
   bool showDeleteTrxnonTapMessage = false;
+  // bool scrollBottomReached = false;
 
   @override
   void initState() {
@@ -62,9 +63,6 @@ class _WithTransactionsDashboardViewState
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       FocusScope.of(context).unfocus();
-      transactionDetailsCallbackProvider.overrideWith(
-        (ref) => _showEditExpenseBottomSheet,
-      );
     });
   }
 
@@ -86,12 +84,15 @@ class _WithTransactionsDashboardViewState
       //     "clients: ${_scrollController.hasClients}, Scroll position: ${_scrollController.position.pixels}, Max Scroll Extent: ${_scrollController.position.maxScrollExtent}, screen height: ${MediaQuery.of(context).size.height} ,should show up ${_scrollController.position.pixels > MediaQuery.of(context).size.height}");
       if (_scrollController.position.pixels ==
           _scrollController.position.maxScrollExtent) {
-        paginationLoadingProvider.overrideWith((ref) => true);
-
+        // Set pagination loading to true
+        ref.read(paginationLoadingProvider.notifier).state = true;
         await ref
             .read(dashboardUncategorizedTransactionsListViewModelProvider
                 .notifier)
             .loadMoreTransactions();
+
+        // Set pagination loading to false after loading
+        ref.read(paginationLoadingProvider.notifier).state = false;
       }
 
       if (mounted &&
@@ -492,8 +493,10 @@ class _WithTransactionsDashboardViewState
       barrierColor: Colors.black.withValues(alpha: 0.7),
       backgroundColor: Colors.transparent,
       builder: (context) {
+        debugPrint(">>>> _showAddExpenseBottomSheet build <<<");
         return StatefulBuilder(
             builder: (BuildContext context, StateSetter state) {
+          debugPrint(">>>> _showAddExpenseBottomSheet builder 1 <<<");
           return Consumer(
             builder: (context, ref, _) {
               return Stack(
@@ -912,22 +915,27 @@ class _WithTransactionsDashboardViewState
     debugPrint('============================');
     debugPrint('WithTransactionsDashboardView build');
     debugPrint('============================');
-    return Stack(
-      children: [
-        _DashboardMainContent(
-          scrollController: _scrollController,
+    return ProviderScope(
+      overrides: [
+        showAddExpenseBottomSheetHandlerProvider.overrideWith(
+          (ref) => _showAddExpenseBottomSheet,
         ),
-        Builder(
-          builder: (context) => _AddExpenseButton(
-            showAddExpenseBottomSheet: _showAddExpenseBottomSheet,
-            ref: ref,
-          ),
-        ),
-        _ScrollToTopButton(
-          show: showScrollToTopButton,
-          scrollController: _scrollController,
+        transactionDetailsCallbackProvider.overrideWith(
+          (ref) => _showEditExpenseBottomSheet,
         ),
       ],
+      child: Stack(
+        children: [
+          _DashboardMainContent(
+            scrollController: _scrollController,
+          ),
+          const _AddExpenseButton(),
+          _ScrollToTopButton(
+            show: showScrollToTopButton,
+            scrollController: _scrollController,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1092,13 +1100,11 @@ class _DashboardDailySummaryGraphContent extends ConsumerWidget {
   }
 }
 
-class _AddExpenseButton extends StatelessWidget {
-  final Future<UserTransaction?> Function(String) showAddExpenseBottomSheet;
-  final WidgetRef ref;
-  const _AddExpenseButton(
-      {required this.showAddExpenseBottomSheet, required this.ref});
+class _AddExpenseButton extends ConsumerWidget {
+  const _AddExpenseButton();
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     debugPrint('>>> _AddExpenseButton build <<<');
     return Positioned(
       width: 167,
@@ -1106,7 +1112,11 @@ class _AddExpenseButton extends StatelessWidget {
       left: (MediaQuery.of(context).size.width / 2) - 100,
       child: CustomButton(
         onPressed: () async {
-          final newTransaction = await showAddExpenseBottomSheet('Add Expense');
+          final callback = ref.watch(showAddExpenseBottomSheetHandlerProvider);
+          if (callback == null) {
+            return;
+          }
+          final newTransaction = await callback('Add Expense');
           if (newTransaction != null) {
             await ref
                 .read(dashboardUncategorizedTransactionsListViewModelProvider

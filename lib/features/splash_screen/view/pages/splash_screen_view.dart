@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:expense_manager/config/app_config.dart';
+import 'package:expense_manager/core/helpers/auto_start_service.dart';
 import 'package:expense_manager/core/helpers/permission_service.dart';
 import 'package:expense_manager/core/helpers/sms_service.dart';
 import 'package:expense_manager/core/http/rest_client.dart';
@@ -91,14 +92,26 @@ class SplashScreenView extends ConsumerWidget {
     switch (smsInitResponse['action']) {
       case initSuccessKey:
       case platformNotAndroidKey:
+        await _initializeAutoStart();
         if (context.mounted) _navigateToDashboard(context);
         break;
       case permissionNotGrantedKey:
+        await _initializeAutoStart();
         if (context.mounted) _navigateToSmsPermissionScreen(context);
         break;
       case contextErrorKey:
       default:
     }
+  }
+
+  Future<void> _initializeAutoStart() async {
+    final response = await AutoStartService().checkIsAutoStartEnabled();
+
+    if (response) {
+      return;
+    }
+
+    await AutoStartService().requestAutoStartPermission();
   }
 
   @override
