@@ -132,7 +132,8 @@ class TransactionsListViewModel extends _$TransactionsListViewModel {
     }
 
     if (updatedTransaction.subCategory == null ||
-        updatedTransaction.subCategory!.id != AppConfig.uncategorizedSubCatId) {
+        updatedTransaction.subCategory!.id !=
+            state.value?.transactions[existingIndex].subCategory?.id) {
       // * if category got is categorized now then do following
       currentTransactions.removeAt(existingIndex);
       // if sub category is uncategorized, remove the transaction

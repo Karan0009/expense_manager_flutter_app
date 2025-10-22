@@ -8,21 +8,25 @@ import 'package:expense_manager/data/models/transactions/summarized_transaction.
 class DashboardMonthlySummaryState {
   final List<SummarizedTransaction> categorySummarizedTransactions;
   final BigInt totalSummarizedAmount;
+  final DateTime selectedMonth;
 
   DashboardMonthlySummaryState({
     required this.categorySummarizedTransactions,
     required this.totalSummarizedAmount,
+    required this.selectedMonth,
   });
 
   DashboardMonthlySummaryState copyWith({
     List<SummarizedTransaction>? categorySummarizedTransactions,
     BigInt? totalSummarizedAmount,
+    DateTime? selectedMonth,
   }) {
     return DashboardMonthlySummaryState(
       categorySummarizedTransactions:
           categorySummarizedTransactions ?? this.categorySummarizedTransactions,
       totalSummarizedAmount:
           totalSummarizedAmount ?? this.totalSummarizedAmount,
+      selectedMonth: selectedMonth ?? this.selectedMonth,
     );
   }
 
@@ -31,6 +35,7 @@ class DashboardMonthlySummaryState {
       'categorySummarizedTransactions':
           categorySummarizedTransactions.map((x) => x.toMap()).toList(),
       'totalSummarizedAmount': totalSummarizedAmount,
+      'selectedMonth': selectedMonth.toIso8601String(),
     };
   }
 
@@ -43,6 +48,7 @@ class DashboardMonthlySummaryState {
         ),
       ),
       totalSummarizedAmount: BigInt.from(map['totalSummarizedAmount']),
+      selectedMonth: DateTime.parse(map['selectedMonth'] as String),
     );
   }
 
@@ -54,7 +60,7 @@ class DashboardMonthlySummaryState {
 
   @override
   String toString() =>
-      'DashboardMonthlySummaryState(categorySummarizedTransactions: $categorySummarizedTransactions, totalSummarizedAmount: $totalSummarizedAmount)';
+      'DashboardMonthlySummaryState(categorySummarizedTransactions: $categorySummarizedTransactions, totalSummarizedAmount: $totalSummarizedAmount, selectedMonth: $selectedMonth)';
 
   @override
   bool operator ==(covariant DashboardMonthlySummaryState other) {
@@ -62,10 +68,13 @@ class DashboardMonthlySummaryState {
 
     return listEquals(other.categorySummarizedTransactions,
             categorySummarizedTransactions) &&
-        other.totalSummarizedAmount == totalSummarizedAmount;
+        other.totalSummarizedAmount == totalSummarizedAmount &&
+        other.selectedMonth == selectedMonth;
   }
 
   @override
   int get hashCode =>
-      categorySummarizedTransactions.hashCode ^ totalSummarizedAmount.hashCode;
+      categorySummarizedTransactions.hashCode ^
+      totalSummarizedAmount.hashCode ^
+      selectedMonth.hashCode;
 }

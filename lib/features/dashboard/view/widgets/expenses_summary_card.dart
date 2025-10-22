@@ -2,6 +2,7 @@ import 'package:expense_manager/config/themes/colors_config.dart';
 import 'package:expense_manager/core/helpers/transaction_helpers.dart';
 import 'package:expense_manager/features/dashboard/view/widgets/expenses_carousel.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/monthly_summary_viewmodel/monthly_summary_viewmodel.dart';
+import 'package:expense_manager/globals/components/animated_icon_tap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -38,22 +39,92 @@ class ExpensesSummaryCard extends ConsumerWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ref.watch(monthlySummaryViewModelProvider).whenData<Widget>(
-                    (value) {
-                      return value != null
-                          ? Text(
-                              "SPENT IN ${DateFormat('MMMM').format(DateTime.parse(value.categorySummarizedTransactions.isEmpty ? DateTime.now().toString() : value.categorySummarizedTransactions[0].summaryStart)).toUpperCase()}",
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium!
-                                  .copyWith(
-                                      fontWeight: FontWeight.w500, fontSize: 9),
-                            )
-                          : SizedBox.shrink();
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  AnimatedIconTap(
+                    icon: Icons.arrow_back_ios,
+                    onTap: () async {
+                      await ref
+                          .read(monthlySummaryViewModelProvider.notifier)
+                          .getPreviousMonthSummary();
                     },
-                  ).value ??
-                  SizedBox.shrink(),
+                    splashColor: ColorsConfig.textColor3.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.all(4),
+                    margin: const EdgeInsets.only(left: 3),
+                  ),
+                  SizedBox(
+                    width: 8,
+                  ),
+                  ref.watch(monthlySummaryViewModelProvider).whenData<Widget>(
+                        (value) {
+                          return value != null
+                              ? Text(
+                                  "SPENT IN ${DateFormat('MMMM').format(value.selectedMonth).toUpperCase()}",
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium!
+                                      .copyWith(
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 9),
+                                )
+                              : SizedBox.shrink();
+                        },
+                      ).value ??
+                      SizedBox.shrink(),
 
+                  SizedBox(
+                    width: 8,
+                  ),
+                  // Arrow to change to next week
+                  AnimatedIconTap(
+                    icon: Icons.arrow_forward_ios,
+                    onTap: () async {
+                      // TODO: FIX THIS THINGY
+                      DateTime now = DateTime.now();
+                      if (now.month ==
+                              ref
+                                  .read(monthlySummaryViewModelProvider)
+                                  .value
+                                  ?.selectedMonth
+                                  .month &&
+                          now.year ==
+                              ref
+                                  .read(monthlySummaryViewModelProvider)
+                                  .value
+                                  ?.selectedMonth
+                                  .year) {
+                        // Current month is the same as the selected month, do not go to next month
+                        return;
+                      }
+
+                      // validation for next month
+
+                      // DateTime last = DateTime(widget.dateRange.last.year,
+                      //     widget.dateRange.last.month, widget.dateRange.last.day);
+
+                      // DateTime isNextWeekCurrentWeek =
+                      //     last.add(const Duration(days: 7));
+                      // DateTime nextWeekLast = DateTime(isNextWeekCurrentWeek.year,
+                      //     isNextWeekCurrentWeek.month, isNextWeekCurrentWeek.day);
+                      //   if (today.isAfter(nextWeekLast)) {
+                      //     setState(() {
+                      //       isCurrentWeek = false;
+                      //     });
+                      //   }
+                      // if (!today.isAfter(last)) {
+                      //   return;
+                      // }
+                      await ref
+                          .read(monthlySummaryViewModelProvider.notifier)
+                          .getNextMonthSummary();
+                    },
+                    splashColor: ColorsConfig.textColor3.withValues(alpha: 0.1),
+                    padding: const EdgeInsets.all(4),
+                  ),
+                ],
+              ),
               const SizedBox(height: 8),
               Container(
                 width: double.infinity,

@@ -84,12 +84,12 @@ class _UserAccountOptionsPageViewState
                   const _UserInfoSection(),
                   const SizedBox(height: 24),
                   const _ProfileSectionHeader(),
-                  _ProfileOptionsSection(),
+                  _profileOptionsSection(),
                   ...listSpacer(context),
                   const _OfflineSectionHeader(),
-                  _OfflineOptionsSection(),
+                  _offlineOptionsSection(),
                   ...listSpacer(context),
-                  _LogoutButtonsSection(),
+                  _logoutButtonsSection(),
 
                   /// EXPENSES SECTION
                   // Align(
@@ -133,8 +133,8 @@ class _UserAccountOptionsPageViewState
     );
   }
 
-  Widget _ProfileOptionsSection() {
-    debugPrint('>>> _ProfileOptionsSection build <<<');
+  Widget _profileOptionsSection() {
+    debugPrint('>>> _profileOptionsSection build <<<');
     return Consumer(
       builder: (context, ref, _) {
         final state = ref.watch(userAccountViewModelProvider);
@@ -151,17 +151,23 @@ class _UserAccountOptionsPageViewState
             UserAccountOptionRow(
               icon: Icons.person_outline,
               optionName: 'Name',
-              onPressed: _emptyFunction,
+              onPressed: () {
+                debugPrint('----------- Name pressed ----------');
+                context.push('/edit-name');
+              },
+              value: state.hasValue ? state.value?.name : null,
             ),
             UserAccountOptionRow(
               icon: Icons.work_outline,
               optionName: 'Occupation',
               onPressed: _emptyFunction,
+              value: state.hasValue ? state.value?.occupation : null,
             ),
             UserAccountOptionRow(
               icon: Icons.location_on_outlined,
               optionName: 'City',
               onPressed: _emptyFunction,
+              value: state.hasValue ? state.value?.city : null,
             ),
           ],
         );
@@ -169,8 +175,8 @@ class _UserAccountOptionsPageViewState
     );
   }
 
-  Widget _OfflineOptionsSection() {
-    debugPrint('>>> _OfflineOptionsSection build <<<');
+  Widget _offlineOptionsSection() {
+    debugPrint('>>> _offlineOptionsSection build <<<');
     return UserAccountListItem(
       icon: Icons.backup,
       optionName: 'Transactions',
@@ -184,8 +190,8 @@ class _UserAccountOptionsPageViewState
     );
   }
 
-  Widget _LogoutButtonsSection() {
-    debugPrint('>>> _LogoutButtonsSection build <<<');
+  Widget _logoutButtonsSection() {
+    debugPrint('>>> _logoutButtonsSection build <<<');
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       spacing: 10,

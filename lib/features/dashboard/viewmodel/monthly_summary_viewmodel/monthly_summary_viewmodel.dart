@@ -14,7 +14,7 @@ part 'monthly_summary_viewmodel.g.dart';
 class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
   @override
   Future<DashboardMonthlySummaryState?> build() async {
-    final summary = await getMonthlySummary();
+    final summary = await getMonthlySummary(DateTime.now());
     return summary.fold(
       (error) {
         print(error.message);
@@ -30,18 +30,73 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
   }
 
   FutureVoid refresh() async {
-    final summary = await getMonthlySummary();
+    final summary = await getMonthlySummary(DateTime.now());
     summary.fold(
       (error) => state = AsyncValue.error(error.message, StackTrace.current),
       (data) => state = AsyncValue.data(data),
     );
   }
 
-  FutureEither<DashboardMonthlySummaryState> getMonthlySummary() async {
+  FutureVoid getNextMonthSummary() async {
+    state = AsyncValue.loading();
+
+    // Get the current summary start date from the first transaction, or fallback to today
+    final currentState = state.value;
+    DateTime currentMonthStart;
+    if (currentState != null) {
+      currentMonthStart = currentState.selectedMonth;
+    } else {
+      currentMonthStart =
+          DateTime(DateTime.now().year, DateTime.now().month, 1);
+    }
+
+    // Advance to the first day of the next month
+    final nextMonthStart = DateTime(
+      currentMonthStart.year,
+      currentMonthStart.month + 1,
+      1,
+    );
+
+    final summary = await getMonthlySummary(nextMonthStart);
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (data) => state = AsyncValue.data(data),
+    );
+  }
+
+  FutureVoid getPreviousMonthSummary() async {
+    state = AsyncValue.loading();
+
+    // Get the current summary start date from the first transaction, or fallback to today
+    final currentState = state.value;
+    DateTime currentMonthStart;
+    if (currentState != null) {
+      currentMonthStart = currentState.selectedMonth;
+    } else {
+      currentMonthStart =
+          DateTime(DateTime.now().year, DateTime.now().month, 1);
+    }
+
+    // Go to the first day of the previous month
+    final previousMonthStart = DateTime(
+      currentMonthStart.year,
+      currentMonthStart.month - 1,
+      1,
+    );
+
+    final summary = await getMonthlySummary(previousMonthStart);
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (data) => state = AsyncValue.data(data),
+    );
+  }
+
+  FutureEither<DashboardMonthlySummaryState> getMonthlySummary(
+      DateTime monthStartDate) async {
     final res = await ref
         .read(transactionSummaryRemoteRepositoryProvider)
         .getSummarizedTransactions<SummarizedTransaction>(
-          onDate: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+          onDate: DateFormat('yyyy-MM-dd').format(monthStartDate),
           summaryType: 'monthly',
           sortBy: 'transaction_datetime',
           orderBy: AppConfig.sortByDesc,
@@ -64,6 +119,7 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
         return Right(DashboardMonthlySummaryState(
           categorySummarizedTransactions: data.data,
           totalSummarizedAmount: totalAmount,
+          selectedMonth: monthStartDate,
         ));
       },
     );
@@ -111,6 +167,7 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
     state = AsyncValue.data(DashboardMonthlySummaryState(
       categorySummarizedTransactions: currentTransactions,
       totalSummarizedAmount: newTotalAmount,
+      selectedMonth: state.value?.selectedMonth ?? DateTime.now(),
     ));
   }
 
@@ -144,6 +201,7 @@ class MonthlySummaryViewModel extends _$MonthlySummaryViewModel {
     state = AsyncValue.data(DashboardMonthlySummaryState(
       categorySummarizedTransactions: currentTransactions,
       totalSummarizedAmount: newTotalAmount,
+      selectedMonth: state.value?.selectedMonth ?? DateTime.now(),
     ));
   }
 

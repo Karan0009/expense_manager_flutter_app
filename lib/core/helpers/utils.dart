@@ -45,28 +45,64 @@ class AppUtils {
     }
   }
 
-  static int? safeParseInt(String? input) {
+  static int? safeParseInt(Object? input) {
     if (input == null) return null;
-    return int.tryParse(input);
+
+    if (input is int) return input;
+
+    if (input is String) return int.tryParse(input);
+
+    return null;
   }
 
   static Map<String, dynamic> getFormattedDateRange(
-      DateTime date, DateRangeType type) {
+    DateTime date,
+    DateRangeType type, {
+    bool isInputDateStartDate = false,
+    bool orderAscending = true,
+  }) {
     late DateTime start;
     late DateTime end;
 
     switch (type) {
       case DateRangeType.week:
-        start = date.subtract(Duration(days: date.weekday - 1));
-        end = start.add(Duration(days: 6));
+        if (isInputDateStartDate) {
+          start = date;
+          end = orderAscending
+              ? start.add(Duration(days: 6))
+              : start.subtract(Duration(days: 6));
+        } else {
+          start = date.subtract(Duration(days: date.weekday - 1));
+          end = orderAscending
+              ? start.add(Duration(days: 6))
+              : start.subtract(Duration(days: 6));
+        }
         break;
       case DateRangeType.month:
-        start = DateTime(date.year, date.month, 1);
-        end = DateTime(date.year, date.month + 1, 0);
+        if (isInputDateStartDate) {
+          start = date;
+          end = orderAscending
+              ? DateTime(date.year, date.month + 1, 0)
+              : DateTime(date.year, date.month, 1);
+        } else {
+          start = DateTime(date.year, date.month, 1);
+          end = orderAscending
+              ? DateTime(date.year, date.month + 1, 0)
+              : DateTime(date.year, date.month, 1);
+        }
         break;
       case DateRangeType.year:
-        start = DateTime(date.year, 1, 1);
-        end = DateTime(date.year, 12, 31);
+        if (isInputDateStartDate) {
+          start = date;
+          end = orderAscending
+              ? DateTime(date.year, 12, 31)
+              : DateTime(date.year, 1, 1);
+        } else {
+          start = DateTime(date.year, 1, 1);
+          end = orderAscending
+              ? DateTime(date.year, 12, 31)
+              : DateTime(date.year, 1, 1);
+        }
         break;
     }
 

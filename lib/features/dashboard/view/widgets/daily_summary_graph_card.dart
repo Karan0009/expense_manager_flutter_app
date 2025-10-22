@@ -4,6 +4,7 @@ import 'package:expense_manager/core/helpers/utils.dart';
 import 'package:expense_manager/core/widgets/skeleton_loader.dart';
 import 'package:expense_manager/core/widgets/unscrollable_card.dart';
 import 'package:expense_manager/features/dashboard/viewmodel/daily_summary_graph_viewmodel/daily_summary_graph_viewmodel.dart';
+import 'package:expense_manager/globals/components/animated_icon_tap.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -34,14 +35,16 @@ class _DailySummaryGraphCardState extends State<DailySummaryGraphCard> {
   }
 }
 
-class BarChartSample5 extends StatefulWidget {
+class BarChartSample5 extends ConsumerStatefulWidget {
   final Map<int, List<double>> dataValues;
+  final List<DateTime> dateRange;
   final Map<int, String> xAxisLabels;
   final BigInt currentWeekTotalAmount;
   final double maxY;
 
   const BarChartSample5({
     required this.dataValues,
+    required this.dateRange,
     required this.maxY,
     required this.xAxisLabels,
     required this.currentWeekTotalAmount,
@@ -49,10 +52,10 @@ class BarChartSample5 extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => _BarChartSample5State();
+  ConsumerState<BarChartSample5> createState() => _BarChartSample5State();
 }
 
-class _BarChartSample5State extends State<BarChartSample5> {
+class _BarChartSample5State extends ConsumerState<BarChartSample5> {
   static const double barWidth = 29;
   int touchedIndex = -1;
   bool showTodayBarTooltip = true;
@@ -66,6 +69,7 @@ class _BarChartSample5State extends State<BarChartSample5> {
     final style = Theme.of(context).textTheme.bodySmall!.copyWith(
           color: ColorsConfig.textColor1,
           fontWeight: FontWeight.w500,
+          fontSize: 8,
         );
     String text = widget.xAxisLabels[value] ?? '';
     return SideTitleWidget(
@@ -159,12 +163,11 @@ class _BarChartSample5State extends State<BarChartSample5> {
     int x,
     double value,
   ) {
-    final isToday = DateTime.now().weekday - 1 == x;
+    final isToday = DateTime.now().day - 1 == x;
     return BarChartGroupData(
       x: x,
       groupVertically: true,
-      showingTooltipIndicators:
-          (showTodayBarTooltip && isToday) || touchedIndex == x ? [0] : [],
+      showingTooltipIndicators: touchedIndex == x ? [0] : [],
       barRods: [
         BarChartRodData(
           toY: value,
@@ -218,13 +221,79 @@ class _BarChartSample5State extends State<BarChartSample5> {
         Align(
           alignment: Alignment.centerLeft,
           child: Column(children: [
-            Text(
-              'THIS WEEK',
-              style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: ColorsConfig.textColor5,
-                    fontWeight: FontWeight.w500,
-                  ),
+            // arrow to change week
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                AnimatedIconTap(
+                  icon: Icons.arrow_back_ios,
+                  onTap: () async {
+                    await ref
+                        .read(dailySummaryGraphViewModelProvider.notifier)
+                        .getPreviousWeekSummary();
+                  },
+                  splashColor: ColorsConfig.textColor3.withValues(alpha: 0.1),
+                  padding: const EdgeInsets.all(4),
+                  margin: const EdgeInsets.only(left: 3),
+                ),
+                SizedBox(
+                  width: 8,
+                ),
+                Text(
+                  () {
+                    // Try to get the first and last date from xAxisLabels
+                    if (widget.dataValues.isNotEmpty) {
+                      final first = DateFormat('MMM d')
+                          .format(widget.dateRange.first)
+                          .toUpperCase();
+                      final last = DateFormat('MMM d')
+                          .format(widget.dateRange.last)
+                          .toUpperCase();
+                      return '$first - $last';
+                    }
+                    return '';
+                  }(),
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                        color: ColorsConfig.textColor5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+                SizedBox(
+                  width: 8,
+                ),
+                // Arrow to change to next week
+                AnimatedIconTap(
+                  icon: Icons.arrow_forward_ios,
+                  onTap: () async {
+                    DateTime now = DateTime.now();
+                    DateTime today = DateTime(now.year, now.month, now.day);
+                    DateTime last = DateTime(widget.dateRange.last.year,
+                        widget.dateRange.last.month, widget.dateRange.last.day);
+
+                    // DateTime isNextWeekCurrentWeek =
+                    //     last.add(const Duration(days: 7));
+                    // DateTime nextWeekLast = DateTime(isNextWeekCurrentWeek.year,
+                    //     isNextWeekCurrentWeek.month, isNextWeekCurrentWeek.day);
+                    //   if (today.isAfter(nextWeekLast)) {
+                    //     setState(() {
+                    //       isCurrentWeek = false;
+                    //     });
+                    //   }
+                    if (!today.isAfter(last)) {
+                      return;
+                    }
+                    await ref
+                        .read(dailySummaryGraphViewModelProvider.notifier)
+                        .getNextWeekSummary();
+                  },
+                  splashColor: ColorsConfig.textColor3.withValues(alpha: 0.1),
+                  padding: const EdgeInsets.all(4),
+                ),
+              ],
             ),
+            // Show the week range using the first and last xAxisLabels
+
             Padding(
               padding: const EdgeInsets.all(3),
               child: Text(
@@ -385,10 +454,10 @@ class ExpensesWeeklySummaryCard extends ConsumerWidget {
         Map<int, List<double>> dataValues = {};
         Map<int, String> xAxisLables = {};
         double maxAmount = 0;
-        value.dateRange.asMap().entries.forEach(
+        value.dateRange.toList().asMap().entries.forEach(
           (element) {
-            final perDayDbValue =
-                value.dailySummarizedTransactionsMap[element.key]?.totalAmount;
+            final perDayDbValue = value
+                .dailySummarizedTransactionsMap[6 - element.key]?.totalAmount;
             double barValue = TransactionHelpers.getAmountFromDbAmount('0');
             if (perDayDbValue != null) {
               barValue = TransactionHelpers.getAmountFromDbAmount(
@@ -398,11 +467,13 @@ class ExpensesWeeklySummaryCard extends ConsumerWidget {
               maxAmount = barValue;
             }
             dataValues[element.key] = [barValue];
-            xAxisLables[element.key] = DateFormat('EEE').format(element.value);
+            xAxisLables[element.key] =
+                DateFormat('d/EEE').format(element.value);
           },
         );
         return BarChartSample5(
           dataValues: dataValues,
+          dateRange: value.dateRange,
           currentWeekTotalAmount: value.totalSummarizedAmount,
           maxY: maxAmount,
           xAxisLabels: xAxisLables,

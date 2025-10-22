@@ -17,7 +17,7 @@ part 'daily_summary_graph_viewmodel.g.dart';
 class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
   @override
   Future<DashboardDailySummaryGraphState?> build() async {
-    final summary = await getCurrentWeeksDayWiseSummary();
+    final summary = await getWeeksDayWiseSummary(DateTime.now());
     return summary.fold(
       (error) {
         log(error.message);
@@ -34,7 +34,7 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
 
   FutureVoid refresh() async {
     state = const AsyncValue.loading();
-    final summary = await getCurrentWeeksDayWiseSummary();
+    final summary = await getWeeksDayWiseSummary(DateTime.now());
 
     summary.fold(
       (error) => state = AsyncValue.error(error.message, StackTrace.current),
@@ -42,15 +42,50 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
     );
   }
 
-  FutureEither<DashboardDailySummaryGraphState>
-      getCurrentWeeksDayWiseSummary() async {
-    final curDate = DateTime.now();
-    // if (curDate == null) {
-    //   return Left(
-    //       HttpFailure(message: 'invalid current date', statusCode: 500));
-    // }
-    final dateRange =
-        AppUtils.getFormattedDateRange(curDate, DateRangeType.week);
+  FutureVoid getPreviousWeekSummary() async {
+    state = const AsyncValue.loading();
+    final currentStartDate = state.value?.dateRange.first;
+    if (currentStartDate == null) {
+      state =
+          AsyncValue.error('No current date range found', StackTrace.current);
+      return;
+    }
+    final previousWeekStartDate =
+        currentStartDate.subtract(const Duration(days: 1));
+    final summary = await getWeeksDayWiseSummary(previousWeekStartDate);
+
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (summary) => state = AsyncValue.data(summary),
+    );
+  }
+
+  FutureVoid getNextWeekSummary() async {
+    state = const AsyncValue.loading();
+    final currentLastDate = state.value?.dateRange.last;
+    if (currentLastDate == null) {
+      state =
+          AsyncValue.error('No current date range found', StackTrace.current);
+      return;
+    }
+    final nextWeekStartDate = currentLastDate.add(const Duration(days: 7));
+    final summary = await getWeeksDayWiseSummary(nextWeekStartDate);
+
+    summary.fold(
+      (error) => state = AsyncValue.error(error.message, StackTrace.current),
+      (summary) => state = AsyncValue.data(summary),
+    );
+  }
+
+  FutureEither<DashboardDailySummaryGraphState> getWeeksDayWiseSummary(
+    DateTime startDate,
+  ) async {
+    final dateRange = AppUtils.getFormattedDateRange(
+      startDate.subtract(const Duration(days: 6)),
+      DateRangeType.week,
+      isInputDateStartDate: true,
+      orderAscending: true,
+    );
     final res = await ref
         .read(transactionSummaryRemoteRepositoryProvider)
         .getSummarizedTransactions<SummarizedTransactionGroupBySummaryStart>(
@@ -222,8 +257,9 @@ class DailySummaryGraphViewModel extends _$DailySummaryGraphViewModel {
 
   bool isTransactionInCurrentWeek(UserTransaction transaction) {
     final curDate = DateTime.now();
-    final dateRange =
-        AppUtils.getFormattedDateRange(curDate, DateRangeType.week);
+    final dateRange = AppUtils.getFormattedDateRange(
+        curDate, DateRangeType.week,
+        isInputDateStartDate: true);
     if (transaction.transactionDatetime == null) {
       // default date is current date
       return true;

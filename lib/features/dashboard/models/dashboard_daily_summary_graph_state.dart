@@ -20,10 +20,9 @@ class DashboardDailySummaryGraphState {
       get dailySummarizedTransactionsMap {
     Map<int, SummarizedTransactionGroupBySummaryStart> map = {};
     for (int i = 0; i < dailySummarizedTransactions.length; i++) {
-      final dayIndex =
-          DateTime.parse(dailySummarizedTransactions[i].summaryStart).weekday -
-              1;
-      map[dayIndex] = dailySummarizedTransactions[i];
+      final dateRelativeIndex = DateTime.now().day -
+          DateTime.parse(dailySummarizedTransactions[i].summaryStart).day;
+      map[dateRelativeIndex] = dailySummarizedTransactions[i];
     }
     return map;
   }

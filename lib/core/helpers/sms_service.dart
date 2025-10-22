@@ -14,7 +14,10 @@ Future<void> backgroundMessageHandler(SmsMessage message) async {
   final String body = message.body ?? '';
 
   log("📨 Incoming SMS from: $sender");
-  if (sender != null && AppConfig.allowedSmsHeaders.contains(sender)) {
+  final containsAny =
+      AppConfig.allowedSmsHeaders.any((item) => body.contains(item));
+
+  if (sender != null && containsAny) {
     log("✅ Sender matched. Processing SMS.");
 
     // Check connectivity and sync if online
@@ -75,7 +78,11 @@ class SmsService {
           final String body = message.body ?? '';
 
           log("📨 Incoming SMS from: $sender");
-          if (sender != null && allowedSenders.contains(sender)) {
+          final containsAny =
+              AppConfig.allowedSmsHeaders.any((item) => body.contains(item));
+          if (sender != null &&
+              allowedSenders.contains(sender) &&
+              containsAny) {
             log("✅ Sender matched. Reading body.");
             onMessageReceived(body);
           } else {

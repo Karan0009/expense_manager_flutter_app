@@ -14,11 +14,11 @@ class GlassmorphicBottomNavigationBar extends ConsumerStatefulWidget {
 
   final List<Map<String, dynamic>> pages = [
     {"icon": Icons.dashboard, "route": DashboardPageView.routePath},
-    {
-      "icon": Icons.account_balance_wallet,
-      "route": DashboardPageView.routePath
-    },
-    {"icon": Icons.bar_chart, "route": DashboardPageView.routePath},
+    // {
+    //   "icon": Icons.account_balance_wallet,
+    //   "route": DashboardPageView.routePath
+    // },
+    // {"icon": Icons.bar_chart, "route": DashboardPageView.routePath},
     {"icon": Icons.person, "route": UserAccountOptionsPageView.routePath}
   ];
 

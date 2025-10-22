@@ -104,7 +104,7 @@ class _EnterOtpPageState extends ConsumerState<EnterOtpPageView> {
                   horizontal: isMobile ? 16.0 : constraints.maxWidth * 0.2,
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     SizedBox(height: constraints.maxHeight * 0.1),
                     Text(

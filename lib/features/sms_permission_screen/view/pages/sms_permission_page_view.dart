@@ -8,8 +8,10 @@ import 'package:expense_manager/core/http/rest_client.dart';
 import 'package:expense_manager/core/widgets/custom_button.dart';
 import 'package:expense_manager/data/repositories/auth/auth_local_repository.dart';
 import 'package:expense_manager/data/repositories/raw_transaction/raw_transaction_local_repository.dart';
+import 'package:expense_manager/features/dashboard/view/dashboard_page_view.dart';
 import 'package:expense_manager/features/sms_permission_screen/view/widgets/sms_example_card.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class SmsPermissionPageView extends StatelessWidget {
   static const String routePath = '/sms-permission';
@@ -55,7 +57,7 @@ class SmsPermissionPageView extends StatelessWidget {
   }
 
   void _navigateToDashboard(BuildContext context) {
-    Navigator.of(context).pop();
+    context.pushReplacement(DashboardPageView.routePath);
   }
 
   @override

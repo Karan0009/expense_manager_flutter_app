@@ -49,8 +49,6 @@ class AppConfig {
     'FEDSMS',
     'FEDBNK',
     'AUBANK',
-    // TODO: REMOVE AFTER TESTING
-    '+917988195437',
   ];
 
   static const String logoutTypeSelf = 'self';

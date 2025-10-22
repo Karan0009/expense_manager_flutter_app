@@ -16,10 +16,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-class SplashScreenView extends ConsumerWidget {
+class SplashScreenView extends ConsumerStatefulWidget {
   static const String routePath = '/';
   const SplashScreenView({super.key});
 
+  @override
+  ConsumerState<SplashScreenView> createState() => _SplashScreenViewState();
+}
+
+class _SplashScreenViewState extends ConsumerState<SplashScreenView> {
   static const initSuccessKey = 'INIT_SUCCESS';
   static const contextErrorKey = 'CONTEXT_ERR';
   static const platformNotAndroidKey = 'PLATFORM_NOT_ANDROID';
@@ -115,7 +120,8 @@ class SplashScreenView extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    log('Building SplashScreenView');
     final tokenState = ref.watch(splashScreenViewModelProvider);
 
     return tokenState.when(

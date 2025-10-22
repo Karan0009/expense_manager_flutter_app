@@ -45,9 +45,48 @@ class UserRemoteRepository {
         }
       });
     } catch (e) {
-      log("Error during OTP request: $e");
+      log("Error during user details update: $e");
       return Left(HttpFailure(
-        message: "An error occurred while requesting OTP",
+        message: "An error occurred while updating user details",
+        statusCode: 500,
+      ));
+    }
+  }
+
+  Future<Either<HttpFailure, Map<String, dynamic>>> update(
+      Map<String, dynamic> data) async {
+    try {
+      final endpoint = 'v1/user/details';
+      final response = await _restClient.putRequest(
+        url: endpoint,
+        requireAuth: true,
+        body: data,
+      );
+
+      return response.fold((l) {
+        return Left(l);
+      }, (r) {
+        try {
+          Map<String, dynamic> updatedData = {
+            'name': r.data["meta"]["name"] ?? '',
+            'occupation': r.data["meta"]["occupation"] ?? '',
+            'city': r.data["meta"]["city"] ?? '',
+          };
+
+          return Right(updatedData);
+        } catch (e) {
+          return Left(
+            HttpFailure(
+              message: "Failed to parse response",
+              statusCode: r.statusCode ?? 500,
+            ),
+          );
+        }
+      });
+    } catch (e) {
+      log("Error during user details update: $e");
+      return Left(HttpFailure(
+        message: "An error occurred while updating user details",
         statusCode: 500,
       ));
     }

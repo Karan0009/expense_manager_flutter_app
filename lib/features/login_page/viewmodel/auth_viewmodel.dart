@@ -98,24 +98,22 @@ class AuthViewModel extends _$AuthViewModel {
       code,
     );
 
-    final val = res.fold(
+    return res.fold(
       (error) {
         state = AsyncValue.error(
           error.message,
           StackTrace.current,
         );
-        return error.toString();
+
+        return Left(error);
       },
       (token) async {
         await saveAccessToken(token.access_token);
         await saveRefreshToken(token.refresh_token);
 
-        return token;
+        return Right(token);
       },
     );
-
-    print(val);
-    return res;
   }
 
   FutureAppFailureEither<bool> saveAccessToken(String? accessToken) async {

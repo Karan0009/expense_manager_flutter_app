@@ -174,6 +174,8 @@ class AutoStartService {
         return 'Go to Settings > Battery > Battery Optimization > Don\'t optimize this app';
       } else if (manufacturer.contains('samsung')) {
         return 'Go to Settings > Battery > App Power Management > Apps that won\'t be put to sleep';
+      } else if (manufacturer.contains('google')) {
+        return 'Go to Settings > Apps & notifications > Special app access > Battery optimization > Don\'t optimize this app';
       } else {
         return 'Go to Settings > Apps > Special app access > Battery optimization > Don\'t optimize this app';
       }
@@ -205,7 +207,8 @@ class AutoStartService {
         'meizu',
         'asus',
         'letv',
-        'leeco'
+        'leeco',
+        'google',
       ];
 
       return needsConfiguration.any((brand) => manufacturer.contains(brand));
